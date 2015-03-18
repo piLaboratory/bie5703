@@ -1,0 +1,168 @@
+---
+title: "Modelos de ocorrência: uma espécie, uma estação"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+[versão em pdf](./esquilos.pdf)
+
+## Preparação
+
+
+Abra o R e carregue os pacotes necessários
+
+```{r}
+library(unmarked)
+library(RMark)
+library(stringr)
+library(plyr)
+```
+Usaremos dados de registros do esquilo _Spermophilus tereticaudus chlorus_ em 1917 plots no deserto americano.
+[Aqui](http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:occupancy#exerciciomodelo_de_uma_especie_uma_estacao)
+há mais informações sobre este caso de estudo.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para convertê-los para um objeto da classe _unmarkedFrame_,
+do pacote _unmarked_:
+
+```{r, eval=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:esquilos.inp"
+## Importa arquivo inp
+tmp <- convert.inp(url,
+                   group.df=data.frame(habitat=c("Mesquite", "Creosote", "Shrub", "Other")),
+                   covariates="distance")
+## Seleciona historico de capturas e converte em data frame
+y <- str_split(tmp$ch, pattern="")
+y <- ldply(y, as.numeric)[,2:4]
+## Cria objeto para o modelo de ocupação do unmarked
+## (Veja vinhetas para os outros tipos de modelos e seus objetos)
+esq <- unmarkedFrameOccu(y = y, siteCovs = tmp[,c("habitat","distance")])
+```
+```{r}
+## Verifica objeto
+summary(esq)
+```
+
+## Ajuste dos modelos
+
+O pacote _unmarked_ usa a
+[sintaxe de modelos lineares](http://ecologia.ib.usp.br/bie5782/doku.php?id=bie5782:03_apostila:06-modelos#a_funcao_lm) do R
+e tem funções para diferentes tipos de
+modelos de ocupação. Consulte as vinhetas do pacote para mais informações
+
+```{r, eval=FALSE}
+## Lista da vinhetas
+vignette(package="unmarked")
+## Abre pdf da vinheta de introdução
+vignette(topic="unmarked", package="unmarked")
+```
+Para os modelos de ocupação com covariáveis usamos função _occu_.
+Seu primeiro argumento é uma fórmula com o formato
+
+> ~covariaveis de detecção ~covariáveis de ocupação
+
+
+Um modelo com probabilidade de ocupação e detecção constantes:
+
+```{r}
+## Ajuste.
+## ~1 indica constante
+esq.m1 <- occu(~1 ~1, data=esq)
+## Resumo do modelo
+summary(esq.m1)
+## Coeficientes na escala logito
+coef(esq.m1)
+## Intervalos de confiança dos coeficientes
+confint(esq.m1, type='det') #p
+confint(esq.m1, type='state') #psi
+```
+Um modelo com probabilidade de detecção variável entre as ocasiões:
+
+```{r}
+## ~obsNum indica uma detectabilidade por categoria de observação (ocasiões)
+esq.m2 <- occu(~obsNum ~1, data=esq)
+## Resumo do modelo
+summary(esq.m2)
+```
+Modelo em que a detecção varia entre ocasiões e
+a ocupação depende do tipo de habitat:
+
+```{r}
+esq.m3 <- occu(~obsNum ~habitat, data=esq)
+## Resumo do modelo
+summary(esq.m3)
+```
+
+Como o modelo acima, mas com a ocupação dependendo
+também da distância a sítios do habitat _mesquite_:
+```{r}
+esq.m4 <- occu(~obsNum ~habitat+distance, data=esq)
+## Resumo do modelo
+summary(esq.m4)
+```
+
+## Seleção de modelos
+
+O _unmarked_ tem funções para criar uma lista de modelos e
+então realizar sua seleção por diversos critérios 
+
+```{r}
+modelos <- fitList("p(.)psi(.)"=esq.m1,
+                   "p(data)psi(.)"=esq.m2,
+                   "p(data)psi(habitat)"=esq.m3,
+                   "p(data)psi(habitat+dist)"=esq.m4)
+modSel(modelos)
+```
+O modelo de menor AIC ( e portanto $\Delta\text{AIC}=0$) é o mais plauśivel. Convenciona-se que modelos com $\Delta\text{AIC}\leq2$ são tão plausíveis quanto o selecionado.
+
+## Cálculo do previsto
+
+O padrão dos modelos de ocupação é usar a função logito
+para as probabilidades de detecção e ocupação:
+
+$$\text{logit}(p)=\log \left( \frac{p}{1-p} \right)$$
+
+Portanto os coeficientes retornados pelas funções `summary`
+e `coef` estão nesta escala.
+Para obter as probabilidades estimadas pelo modelo
+na escala original use a função `predict`.
+
+Abaixo um exemplo deste cálculo para
+as probabilidades de ocupação previstas pelo
+modelo selecionado, que prevê efeito de
+habitat e de distância:
+
+```{r}
+## primeiro criamos um dataframe com os valores das covariaveis em que faremos as previsões
+## Objeto com as covariaveis
+cv1 <- siteCovs(esq)
+## Dataframe com as combinacoes dos 4 habitats e
+## 100 distancias de zero ao maximo
+df1 <- expand.grid(habitat=levels(cv1$habitat),
+                   distance=seq(0, max(cv1$distance), length=100))
+esq.m4.pred <- predict(esq.m4, type='state', newdata = df1)
+```
+E um exemplo de gráfico dos previstos e seus intervalos de confiança
+para os plots no habitat _Creosote_:
+
+```{r}
+## Juntando os previstos as covariaveis
+esq.m4.pred <- cbind(df1, esq.m4.pred)
+## Plot de psi x distância para o habitat Creosote
+plot(Predicted ~ distance, data=esq.m4.pred,
+     subset=habitat=="Creosote",
+     ylim=c(0,1), type="l",
+     main="Creosote")
+lines(upper ~ distance, data=esq.m4.pred,
+      subset=habitat=="Creosote", lty=2)
+lines(lower ~ distance, data=esq.m4.pred,
+     subset=habitat=="Creosote", lty=2)
+
+```
+
+Repita os gráficos dos previstos para os outros habitats.

@@ -9,8 +9,13 @@ output:
     highlight: zenburn
 ---
 
-[versão em pdf](./esquilos.pdf)
+-------
 
+
+* [Arquivo em pdf](./esquilos.pdf)
+* [Arquivo em markdown](./esquilos.Rmd) (para executar os comandos no R studio)
+
+-------
 ## Preparação
 
 

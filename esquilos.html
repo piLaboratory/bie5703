@@ -72,14 +72,29 @@ img {
 </ul>
 </div>
 
-<p><a href="./esquilos.pdf">versão em pdf</a></p>
+<hr />
+<ul>
+<li><a href="./esquilos.pdf">Arquivo em pdf</a></li>
+<li><a href="./esquilos.Rmd">Arquivo em markdown</a> (para executar os comandos no R studio)</li>
+</ul>
+<hr />
 <div id="preparacao" class="section level2">
 <h2>Preparação</h2>
 <p>Abra o R e carregue os pacotes necessários</p>
-<pre class="r"><code>library(unmarked)
-library(RMark)
-library(stringr)
+<pre class="r"><code>library(unmarked)</code></pre>
+<pre><code>## Loading required package: reshape
+## Loading required package: lattice
+## Loading required package: Rcpp</code></pre>
+<pre class="r"><code>library(RMark)</code></pre>
+<pre><code>## This is RMark 2.1.9</code></pre>
+<pre class="r"><code>library(stringr)
 library(plyr)</code></pre>
+<pre><code>## 
+## Attaching package: 'plyr'
+## 
+## The following objects are masked from 'package:reshape':
+## 
+##     rename, round_any</code></pre>
 <p>Usaremos dados de registros do esquilo <em>Spermophilus tereticaudus chlorus</em> em 1917 plots no deserto americano. <a href="http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:occupancy#exerciciomodelo_de_uma_especie_uma_estacao">Aqui</a> há mais informações sobre este caso de estudo.</p>
 <p>Os dados estão no formato nativo do MARK (<em>.inp</em>). Use os comandos abaixo para convertê-los para um objeto da classe <em>unmarkedFrame</em>, do pacote <em>unmarked</em>:</p>
 <pre class="r"><code>## Link dos dados na página da disciplina

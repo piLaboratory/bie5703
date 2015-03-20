@@ -123,7 +123,7 @@ modelos <- fitList("p(.)psi(.)"=esq.m1,
                    "p(data)psi(habitat+dist)"=esq.m4)
 modSel(modelos)
 ```
-O modelo de menor AIC ( e portanto $\Delta\text{AIC}=0$) é o mais plauśivel. Convenciona-se que modelos com $\Delta\text{AIC}\leq2$ são tão plausíveis quanto o selecionado.
+O modelo de menor AIC ( e portanto $\Delta\text{AIC}=0$) é o mais plausível. Convenciona-se que modelos com $\Delta\text{AIC}\leq2$ são tão plausíveis quanto o selecionado.
 
 ## Cálculo do previsto
 

@@ -1,0 +1,221 @@
+---
+title: "Modelos de ocorrência: uma espécie, várias estações"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+-------
+
+
+* [Arquivo em pdf](./corujas.pdf)
+* [Arquivo em markdown](./corujas.Rmd) (para executar os comandos no R studio)
+
+-------
+## Preparação
+
+
+Abra o R e carregue os pacotes necessários
+
+```{r}
+library(unmarked)
+library(RMark)
+library(stringr)
+library(plyr)
+```
+Usaremos dados de registros da coruja manchada do norte  _Strix occidentalis caurina_ em 55 sítios de floresta temperada
+nos EUA, por 5 anos.
+[Aqui](http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:occupancy#exerciciomodelo_de_uma_especie_multiplas_estacoes)
+há mais informações sobre este caso de estudo.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para convertê-los para um objeto da classe
+_unmarkedMultFrame_, do pacote _unmarked_:
+
+```{r, eval=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:corujas.inp"
+## Importa arquivo inp
+tmp <- convert.inp(url)
+## Seleciona historico de capturas e converte em data frame
+y <- str_split(tmp$ch, pattern="")
+y <- ldply(y, as.numeric)[,2:41]
+```
+Os dados são de oito visitas anuais, por 5 anos. Temos então que criar covariável que indique o ano
+de cada visita, que deve ser uma matriz com número de linhas igual ao número de sítios (55 no caso)
+e número de linhas igual ao número de anos.[^1]
+
+```{r}
+ano <- matrix(data = rep(factor(1998:2002), nrow(y)),
+              nrow=nrow(y), ncol=ncol(y)/8, byrow=TRUE)
+```
+
+Como neste exemplo não há covariáveis dos sítios nem das visitas já podemos criar o objeto
+para ajustar o modelo [^2]. Note que o número de ocasiões (anos no caso)
+deve ser informado no argumento `numPrimary`:
+
+```{r}
+## Cria objeto para o modelo de ocupação multiseason do unmarked
+## (Veja vinhetas para detalhes)
+coruj <- unmarkedMultFrame(y = y,
+                           yearlySiteCovs = list(ano=ano),
+                           numPrimary=5)
+## Verifica objeto
+summary(coruj)
+```
+
+## Ajuste dos modelos
+
+O pacote _unmarked_ usa a
+[sintaxe de modelos lineares](http://ecologia.ib.usp.br/bie5782/doku.php?id=bie5782:03_apostila:06-modelos#a_funcao_lm) do R
+e tem funções para diferentes tipos de
+modelos de ocupação.
+Consulte as vinhetas do pacote para mais informações
+
+```{r, eval=FALSE}
+## Lista da vinhetas
+vignette(package="unmarked")
+## Abre pdf da vinheta de introdução
+vignette(topic="unmarked", package="unmarked")
+## Abre pdf da vinheta dos modelos de múltiplas estações
+vignette(topic="colext", package="unmarked")
+```
+Para os modelos de ocupação com covariáveis usamos função _colext_.
+Seus primeiros quatro argumentos são fórmulas para os parâmetros de
+ocupação inicial ( $\psi$ ), colonização ( $\gamma$ ), extinção ( $\epsilon$ )
+e detecção ( $p$ ).
+
+O modelos mais simples é o que tem todos estes parâmetros constantes:
+
+```{r}
+## ~1 indica constante
+coruj.m1 <- colext(psiformula=~1, gammaformula=~1,
+                   epsilonformula=~1, pformula=~1,
+                   data=coruj)
+## Resumo do modelo
+summary(coruj.m1)
+## Coeficientes na escala logito
+coef(coruj.m1)
+## Intervalos de confiança dos coeficientes
+confint(coruj.m1, type='det') #p
+confint(coruj.m1, type="psi") #psi inicial
+confint(coruj.m1, type="col") #gamma
+confint(coruj.m1, type="ext") #epsilon
+```
+
+O padrão dos modelos de ocupação é usar a função logito
+para as probabilidades de detecção e ocupação:
+
+$$\text{logit}(p)=\log \left( \frac{p}{1-p} \right)$$
+
+Portanto os coeficientes retornados pelas funções `summary`
+e `coef` estão nesta escala.
+Para obter as probabilidades estimadas pelo modelo
+na escala original use a função `backTransform`.
+
+```{r}
+## Coeficientes na escala de probabilidades
+(m1.p <- backTransform(coruj.m1, type="det"))
+(m1.psi= backTransform(coruj.m1, type="psi"))
+(m1.gamma = backTransform(coruj.m1, type="col"))
+(m1.epsilon = backTransform(coruj.m1, type="ext"))
+## Intervalos de confiança
+confint(m1.p)
+confint(m1.psi)
+confint(m1.gamma)
+confint(m1.gamma)
+```
+
+Vamos ajustar um modelo em que detecção e colonização variam entre ocasiões (anos)[^3]: 
+
+```{r}
+coruj.m2 <- colext(psiformula=~1, gammaformula=~ano-1,
+                   epsilonformula=~1, pformula=~ano-1,
+                   data=coruj)
+## Resumo do modelo
+summary(coruj.m2)
+```
+E agora com a extinção diferente entre ocasiões e colonização constante:
+```{r}
+coruj.m3 <- colext(psiformula=~1, gammaformula=~1,
+                   epsilonformula=~ano-1, pformula=~ano-1,
+                   data=coruj)
+## Resumo do modelo
+summary(coruj.m3)
+```
+E com extinção e colonização diferentes entre anos:
+
+```{r}
+coruj.m4 <- colext(psiformula=~1, gammaformula=~ano-1,
+                   epsilonformula=~ano-1, pformula=~ano-1,
+                   data=coruj)
+## Resumo do modelo
+summary(coruj.m4)
+```
+
+## Seleção de modelos
+
+O _unmarked_ tem funções para criar uma lista de modelos e
+então realizar sua seleção por diversos critérios 
+
+```{r}
+modelos <- fitList("p(.)psi(.)e(.)g(.)"=coruj.m1,
+                   "p(ano)psi(.)e(.)g(ano)"=coruj.m2,
+                   "p(ano)psi(.)e(ano)g(.)"=coruj.m3,
+                   "p(ano)psi(.)e(ano)g(ano)"=coruj.m4)
+modSel(modelos)
+```
+O modelo de menor AIC ( e portanto $\Delta\text{AIC}=0$) é o mais plausível. Convenciona-se que modelos com $\Delta\text{AIC}\leq2$ são tão plausíveis quanto o selecionado.
+
+## Cálculo do previsto
+
+### Valor previsto dos parâmetros
+O modelo com variação de $\gamma$ entre anos é o único com $\Delta\text{AIC}\leq2$.
+Usamos a função `pred` para estimar os valores de colonização ao longo dos anos:
+
+```{r}
+## primeiro criamos um dataframe com os valores das covariaveis em que faremos as previsões
+## Objeto com as covariaveis
+df1 <- data.frame(ano=factor(1998:2001))
+## Previstos e seus Se e ICs
+(coruj.m4.pred <- predict(coruj.m2, type='col', newdata = df1))
+```
+E um exemplo de gráfico dos previstos e seus intervalos de confiança:
+
+```{r}
+## Juntando os previstos as covariaveis
+coruj.m4.pred$ano <- 1998:2001
+## Plot de psi x distância para o habitat Creosote
+plot(Predicted ~ ano, data=coruj.m4.pred,
+     ylim=range(coruj.m4.pred[,3:4]), ylab="p colonização", xlab="Ano")
+with(coruj.m4.pred, segments(x0=ano, y0=lower, x1=ano, y1=upper))
+
+```
+
+### Valor previsto de parâmetros derivados
+Nos modelos de ocupação com múltiplas ocasiões estima a probabilidade inicial de ocupação $\psi_{1}$.
+A probabilidade de ocupação na ocasião seguinte $\psi_2$ é:
+
+$$\psi_2 \, = \, \psi_1 \phi_1 + (1-\phi_1) \gamma  $$
+
+Em que $\phi$ é a probabilidade de persistência ($\phi_i = 1-\epsilon_i$).
+
+Portanto, as probabilidades de ocupação para as ocasiões exceto a primeira são **parâmetros derivados**.
+O objeto resultante do ajuste já tem estas quantidades guardadas nele. Para vê-las digite
+
+```{r}
+projected(coruj.m2)
+```
+
+Veja a vinheta do pacote para modelos de múltiplas ocasiões para o cálculo dos intervalos de confiança.
+
+
+
+[^1]: neste exemplo a única covariável é a identidade do ano em que ocorreu cada visita. Se há outra covariáveis associadas aos anos basta criar outra matrizes com os valores destas covariáveis com as mesmas dimensões.
+
+[^2]: Veja `help(colext)` e `vignette(topic="colext", package="unmarked")`a  para incluir covariáveis de sítios e de visitas.
+
+[^3]: A notação `ano-1` elimina o intercepto da covariável, que corresponde ao primeiro ano. É apenas uma conveniência para ter um coeficiente para cada ano.

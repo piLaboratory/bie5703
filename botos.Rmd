@@ -49,13 +49,13 @@ Para o modelo de populações fechada sem heterogeneidade e de
 verossimilhança não condicionada este argumento é
 `model="Closed"`:
 
-```{r, eval=FALSE}
+```{r}
 boto <- process.data(data=boto2002, model="Closed")
 ```
 
 E para o modelo com heterogeneidade o argumento é `model="FullHet"`
 
-```{r, eval=FALSE}
+```{r}
 botoH <- process.data(data=boto2002, model="FullHet")
 ```
 ### Ajuste dos modelos sem heterogeneidade
@@ -79,7 +79,7 @@ t.timeshared <- list(formula=~time, share=TRUE)
 
 E usamos a função `mark` para fazer os ajuste:
 
-```{r, echo=FALSE}
+```{r, results="hide"}
 boto.M0 <- mark(boto, model.parameters=list(p=t.dotshared))
 boto.Mb <- mark(boto, model.parameters=list(c=t.dot, p=t.dot))
 boto.Mt <- mark(boto, model.parameters=list(p=t.timeshared))
@@ -103,7 +103,7 @@ t.timemix <- list(formula=~time+mixture)
 ```
 E ajuste os modelos
 
-```{r, echo=FALSE}
+```{r, results="hide"}
 boto.Mh <- mark(botoH, model.parameters=list(p=t.mixshared))
 boto.Mbh <- mark(botoH, model.parameters=list(c=t.mix, p=t.mix))
 boto.Mth <- mark(botoH, model.parameters=list(p=t.timeshared))

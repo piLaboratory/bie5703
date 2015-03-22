@@ -1,0 +1,130 @@
+---
+title: "Modelos de marcação e recaptura: populações fechadas"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+-------
+
+
+* [Arquivo em pdf](./botos.pdf)
+* [Arquivo em markdown](./botos.Rmd) (para executar os comandos no R studio)
+
+-------
+## Preparação
+
+Vamos usar o pacote _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
+Siga as instruções deste sítio para instalar o MARK para uso pelo pacote: (http://www.phidot.org/software/mark/rmark/).
+
+Abra o R e carregue o pacote
+
+```{r}
+library(RMark)
+```
+Usaremos dados de registro fotográfico de indivíduos do boto cinza (_Sotalia guianensis_) em 11 ocasiões.
+[Aqui](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_7_abundancia_botos.pdf)
+há mais informações sobre este caso de estudo.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para importá-lo para o R:
+
+```{r, eval=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:botos_2002.inp"
+## Importa arquivo inp
+boto2002 <- convert.inp(url)
+```
+
+## Ajuste dos modelos
+### Processamento dos dados
+O primeiro passo é usar a função `process.data` para criar um objeto
+com as informações que o Mark usa para ajustar o modelo. Uma delas
+é o tipo de modelo, que é indicado no argumento `model`.
+
+Para o modelo de populações fechada sem heterogeneidade e de
+verossimilhança não condicionada este argumento é
+`model="Closed"`:
+
+```{r, eval=FALSE}
+boto <- process.data(data=boto2002, model="Closed")
+```
+
+E para o modelo com heterogeneidade o argumento é `model="FullHet"`
+
+```{r, eval=FALSE}
+botoH <- process.data(data=boto2002, model="FullHet")
+```
+### Ajuste dos modelos sem heterogeneidade
+
+Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
+No modelo `Closed` os nomes parâmetros que podem variar são `p` (probabilidade da primeira captura),
+`c` (probabilidade de recaptura). O objeto criado na seção acima tem uma covariável de tempo
+chamada `time`, que então pode ser usado nas fórmulas:
+
+```{r}
+## Fórmulas estatísticas para cada parâmetro do modelo sem heterogeneidade
+## p e c constantes mas diferentes
+t.dot <- list(formula=~1)
+## p=c contantes (use o argumento share=TRUE)
+t.dotshared=list(formula=~1,share=TRUE)
+## Parametros dependem do tempo
+t.time <- list(formula=~time)
+## Parametro p=c dependem do tempo
+t.timeshared <- list(formula=~time, share=TRUE)
+```
+
+E usamos a função `mark` para fazer os ajuste:
+
+```{r, echo=FALSE}
+boto.M0 <- mark(boto, model.parameters=list(p=t.dotshared))
+boto.Mb <- mark(boto, model.parameters=list(c=t.dot, p=t.dot))
+boto.Mt <- mark(boto, model.parameters=list(p=t.timeshared))
+boto.Mtb <- mark(boto, model.parameters=list(c=t.time, p=t.time))
+```
+
+### Ajuste dos modelos com heterogeneidade
+
+Para os modelos com heterogeneidade acrescente o termo `mixture`
+nas fórmulas do parâmetro p:
+
+```{r}
+## Fórmulas estatísticas para cada parâmetro do modelo com heterogeneidade
+## p com heterogeneidade
+t.mix <- list(formula=~mixture)
+## p=c com heterogeneidade (use o argumento share=TRUE)
+t.mixshared=list(formula=~mixture,share=TRUE)
+## Parametros dependem do tempo
+t.timemixshared <- list(formula=~time+mixture, share=TRUE)
+t.timemix <- list(formula=~time+mixture)
+```
+E ajuste os modelos
+
+```{r, echo=FALSE}
+boto.Mh <- mark(botoH, model.parameters=list(p=t.mixshared))
+boto.Mbh <- mark(botoH, model.parameters=list(c=t.mix, p=t.mix))
+boto.Mth <- mark(botoH, model.parameters=list(p=t.timeshared))
+boto.Mtbh <- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix))
+```
+## Seleção de modelos
+A função abaixo retorna a tabela de seleção de modelos:
+
+```{r}
+collect.models(lx=c("boto.M0", "boto.Mb", "boto.Mt", "boto.Mtb",
+                   "boto.Mh", "boto.Mbh", "boto.Mth", "boto.Mtbh"))
+```
+## Valores das estimativas
+A função `coef` retorna os coeficientes na escala de ligação (logito).
+Para as estimativas na escala de probabilidades use a função `get.real`:
+
+```{r}
+coef(boto.Mtbh, data=boto2002)
+## Na escala de probabilidades
+get.real(boto.Mtbh, parameter="p")
+get.real(boto.Mtbh, parameter="c")
+get.real(boto.Mtbh, parameter="pi")
+```
+

@@ -176,7 +176,7 @@ boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
                    &quot;boto.Mh&quot;, &quot;boto.Mbh&quot;, &quot;boto.Mth&quot;, &quot;boto.Mtbh&quot;))</code></pre>
 <pre><code>## Warning in model.table(x, type, pf = 2, adjust = adjust): Model list contains models of differing types</code></pre>
 <pre><code>##   model npar     AICc DeltaAICc       weight Deviance
-## 7   Mth   24 252.9300   0.00000 9.997964e-01 148.1514
+## 7   Mth   24 252.9300   0.00000 9.997964e-01 148.1513
 ## 3    Mt   12 270.1989  17.26893 1.778327e-04 191.7698
 ## 6   Mbh    6 275.2837  22.35377 1.399112e-05 209.4365
 ## 5    Mh    4 275.6888  22.75878 1.142628e-05 213.9520
@@ -189,60 +189,60 @@ boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
 <h2>Valores das estimativas</h2>
 <p>A função <code>coef</code> retorna os coeficientes na escala de ligação (logito). Para as estimativas na escala de probabilidades use a função <code>get.real</code>:</p>
 <pre class="r"><code>coef(boto.Mth, data=boto2002)</code></pre>
-<pre><code>##                     estimate           se           lcl           ucl
-## pi:(Intercept)     -1.902036 4.820120e-01     -2.846780    -0.9572929
-## p:(Intercept)      16.976968 1.445909e+02   -266.421310   300.3752400
-## p:time2           -16.571506 1.445935e+02   -299.974720   266.8317100
-## p:time3           -16.571517 1.445935e+02   -299.974710   266.8316800
-## p:time4           -15.590694 1.445940e+02   -298.994850   267.8134600
-## p:time5            12.199155 5.569212e+02  -1079.366300  1103.7647000
-## p:time6           -17.382444 1.445934e+02   -300.785580   266.0206900
-## p:time7           -16.571513 1.445930e+02   -299.973820   266.8307900
-## p:time8           -17.382466 1.445938e+02   -300.786250   266.0213200
-## p:time9            13.159571 7.043389e+03 -13791.883000 13818.2020000
-## p:time10          -17.382458 1.445941e+02   -300.786940   266.0220300
-## p:time11          -17.382451 1.445941e+02   -300.786890   266.0219900
-## p:mixture2        -18.308124 1.445910e+02   -301.706560   265.0903100
-## p:time2:mixture2   16.901303 1.445940e+02   -266.503020   300.3056300
-## p:time3:mixture2   16.901302 1.445940e+02   -266.503010   300.3056100
-## p:time4:mixture2   16.590607 1.445944e+02   -266.814390   299.9956000
-## p:time5:mixture2  -11.451042 5.569212e+02  -1103.016600  1080.1145000
-## p:time6:mixture2   17.712238 1.445940e+02   -265.692000   301.1164800
-## p:time7:mixture2   17.319628 1.445935e+02   -266.083580   300.7228300
-## p:time8:mixture2  -23.805479 1.086162e-07    -23.805480   -23.8054790
-## p:time9:mixture2  -41.169309 9.519089e+02  -1906.910700  1824.5721000
-## p:time10:mixture2  16.394566 1.445956e+02   -267.012710   299.8018400
-## p:time11:mixture2  16.715582 1.445952e+02   -266.691040   300.1222000
-## f0:(Intercept)      0.403980 1.114591e+00     -1.780618     2.5885781</code></pre>
+<pre><code>##                      estimate           se         lcl         ucl
+## pi:(Intercept)     -1.9020406 4.820125e-01   -2.846785  -0.9572961
+## p:(Intercept)      25.8774770 9.748995e+01 -165.202820 216.9577800
+## p:time2           -25.4720110 9.749367e+01 -216.559600 165.6155800
+## p:time3           -25.4720090 9.749367e+01 -216.559600 165.6155800
+## p:time4           -24.4911840 9.749431e+01 -215.580040 166.5976700
+## p:time5            17.8018110 3.879386e+02 -742.557910 778.1615400
+## p:time6           -26.2829440 9.749364e+01 -217.370480 164.8045900
+## p:time7           -25.4720140 9.749298e+01 -216.558260 165.6142300
+## p:time8           -26.2829470 9.749412e+01 -217.371420 164.8055300
+## p:time9            20.1909530 2.514109e-08   20.190952  20.1909530
+## p:time10          -26.2829450 9.749466e+01 -217.372480 164.8065900
+## p:time11          -26.2829410 9.749463e+01 -217.372420 164.8065400
+## p:mixture2        -27.2086300 9.749008e+01 -218.289190 163.8719300
+## p:time2:mixture2   25.8018040 9.749452e+01 -165.287460 216.8910700
+## p:time3:mixture2   25.8018010 9.749452e+01 -165.287470 216.8910700
+## p:time4:mixture2   25.4910930 9.749496e+01 -165.599030 216.5812100
+## p:time5:mixture2  -17.0537030 3.879386e+02 -777.413450 743.3060400
+## p:time6:mixture2   26.6127340 9.749449e+01 -164.476470 217.7019400
+## p:time7:mixture2   26.2201230 9.749367e+01 -164.867480 217.3077300
+## p:time8:mixture2  -35.2006740 2.281150e-02  -35.245385 -35.1559640
+## p:time9:mixture2  -60.8528450 0.000000e+00  -60.852845 -60.8528450
+## p:time10:mixture2  25.2950560 9.749678e+01 -165.798640 216.3887500
+## p:time11:mixture2  25.6160690 9.749630e+01 -165.476670 216.7088100
+## f0:(Intercept)      0.4040033 1.114558e+00   -1.780531   2.5885373</code></pre>
 <pre class="r"><code>## Na escala de probabilidades
 get.real(boto.Mth, parameter=&quot;p&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                   1         2         3         4         5         6
-## mixture:1 1.0000000 0.5999992 0.5999967 0.7999967 1.0000000 0.3999973
-## mixture:2 0.2089682 0.2686742 0.2686720 0.4179382 0.3582326 0.2686738
+## mixture:1 1.0000000 0.6000003 0.6000008 0.7999998 1.0000000 0.3999997
+## mixture:2 0.2089687 0.2686741 0.2686740 0.4179379 0.3582321 0.2686736
 ##                   7            8            9        10        11
-## mixture:1 0.5999976 3.999921e-01 1.000000e+00 0.3999941 0.3999957
-## mixture:2 0.3582332 3.421282e-19 1.808887e-13 0.0895577 0.1194105</code></pre>
+## mixture:1 0.5999996 3.999990e-01 1.000000e+00 0.3999994 0.4000004
+## mixture:2 0.3582326 5.246751e-28 5.789648e-19 0.0895581 0.1194105</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;pi&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                    
-## mixture:1 0.1298782</code></pre>
+## mixture:1 0.1298777</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;f0&quot;) ##N de indivíduos não registrados</code></pre>
 <pre><code>## [[1]]
 ##         1
-##  1.497774</code></pre>
+##  1.497809</code></pre>
 <div id="estimativa-do-tamanho-populacional" class="section level3">
 <h3>Estimativa do tamanho populacional</h3>
 <p>A estimativa de interesse é o tamanho da população, que é obtido somando-se a <span class="math">\(f_0\)</span> ao total de indivíduos registrados. Usamos a função <code>get.real</code> com argumento <code>se=TRUE</code> para obter os intervalos de confiança<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
 <pre class="r"><code>(boto.f0.ic &lt;- as.numeric(get.real(boto.Mth, parameter=&quot;f0&quot;, se=TRUE)[,5:6]))</code></pre>
-<pre><code>## [1] 0.2573536 8.7169048</code></pre>
+<pre><code>## [1] 0.2573687 8.7167991</code></pre>
 <p>O número de indivíduos registrados é a soma das frequências no objeto processado</p>
 <pre class="r"><code>(boto.Nobs &lt;- sum(boto$freq))</code></pre>
 <pre><code>## [1] 37</code></pre>
 <p>E finalmente temos o intervalo de confiança do tamanho populacional</p>
 <pre class="r"><code>(boto.Nobs + boto.f0.ic)</code></pre>
-<pre><code>## [1] 37.25735 45.71690</code></pre>
-<p>A estimativa do tamanho populacional parece bastante precisa, mas com o pacote <em>Rcapture</em> os intervalos são mais conservadores. Confira isto excutando o <a href="http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:closed">roteiro para este pacote</a></p>
+<pre><code>## [1] 37.25737 45.71680</code></pre>
+<p>A estimativa do tamanho populacional parece bastante precisa, mas com o pacote <em>Rcapture</em> os intervalos são mais conservadores. Confira isto executando o <a href="http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:closed_rcapture.r">roteiro do Rcapture</a></p>
 </div>
 </div>
 <div class="footnotes">

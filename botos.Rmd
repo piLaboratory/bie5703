@@ -176,7 +176,7 @@ E finalmente temos o intervalo de confiança do tamanho populacional
 
 A estimativa do tamanho populacional parece bastante precisa,
 mas com o pacote _Rcapture_ os intervalos são mais conservadores.
-Confira isto excutando o [roteiro para este pacote](http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:closed)
+Confira isto executando o [roteiro do Rcapture](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:closed_rcapture.r)
 
 [^1]: O parâmetro $f_0$ (número de indivíduos não registrados em nenhuma ocasião)
 é constante por definição, já que a população é fechada.

@@ -72,7 +72,9 @@ img {
 <li><a href="#ajuste-dos-modelos-com-heterogeneidade">Ajuste dos modelos com heterogeneidade</a></li>
 </ul></li>
 <li><a href="#selecao-de-modelos">Seleção de modelos</a></li>
-<li><a href="#valores-das-estimativas">Valores das estimativas</a></li>
+<li><a href="#valores-das-estimativas">Valores das estimativas</a><ul>
+<li><a href="#estimativa-do-tamanho-populacional">Estimativa do tamanho populacional</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -84,10 +86,10 @@ img {
 <hr />
 <div id="preparacao" class="section level2">
 <h2>Preparação</h2>
-<p>Vamos usar o pacote <em>RMark</em>, que é um pacote do R para usar o programa <a href="http://www.phidot.org/software/mark">MARK</a>. Siga as instruções deste sítio para instalar o MARK para uso pelo pacote: (<a href="http://www.phidot.org/software/mark/rmark/" class="uri">http://www.phidot.org/software/mark/rmark/</a>).</p>
+<p>Vamos usar o pacote <em>RMark</em>, que é um pacote do R para usar o programa <a href="http://www.phidot.org/software/mark">MARK</a>. Siga as instruções do <a href="http://www.phidot.org/software/mark/rmark/">site do RMark</a> para instalar o pacote.</p>
 <p>Abra o R e carregue o pacote</p>
 <pre class="r"><code>library(RMark)</code></pre>
-<p>Usaremos dados de registro fotográfico de indivíduos do boto cinza (<em>Sotalia guianensis</em>) em 11 ocasiões. <a href="http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_7_abundancia_botos.pdf">Aqui</a> há mais informações sobre este caso de estudo.</p>
+<p>Usaremos dados de registros fotográficos de indivíduos do boto cinza (<em>Sotalia guianensis</em>) em 11 ocasiões. <a href="http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_7_abundancia_botos.pdf">Aqui</a> há mais informações sobre este caso de estudo.</p>
 <p>Os dados estão no formato nativo do MARK (<em>.inp</em>). Use os comandos abaixo para importá-lo para o R:</p>
 <pre class="r"><code>## Link dos dados na página da disciplina
 url &lt;- &quot;http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:botos_2002.inp&quot;
@@ -99,14 +101,14 @@ boto2002 &lt;- convert.inp(url)</code></pre>
 <div id="processamento-dos-dados" class="section level3">
 <h3>Processamento dos dados</h3>
 <p>O primeiro passo é usar a função <code>process.data</code> para criar um objeto com as informações que o Mark usa para ajustar o modelo. Uma delas é o tipo de modelo, que é indicado no argumento <code>model</code>.</p>
-<p>Para o modelo de populações fechada sem heterogeneidade e de verossimilhança não condicionada este argumento é <code>model=&quot;Closed&quot;</code>:</p>
+<p>Para o modelo de populações fechada sem heterogeneidade e de verossimilhança condicionada este argumento é <code>model=&quot;Closed&quot;</code>:</p>
 <pre class="r"><code>boto &lt;- process.data(data=boto2002, model=&quot;Closed&quot;)</code></pre>
 <p>E para o modelo com heterogeneidade o argumento é <code>model=&quot;FullHet&quot;</code></p>
 <pre class="r"><code>botoH &lt;- process.data(data=boto2002, model=&quot;FullHet&quot;)</code></pre>
 </div>
 <div id="ajuste-dos-modelos-sem-heterogeneidade" class="section level3">
 <h3>Ajuste dos modelos sem heterogeneidade</h3>
-<p>Para ajustar os modelos, crie listas que especificam a fórmula de cada termo. No modelo <code>Closed</code> os nomes parâmetros que podem variar são <code>p</code> (probabilidade da primeira captura), <code>c</code> (probabilidade de recaptura). O objeto criado na seção acima tem uma covariável de tempo chamada <code>time</code>, que então pode ser usado nas fórmulas:</p>
+<p>Para ajustar os modelos, crie listas que especificam a fórmula de cada termo. No modelo <code>Closed</code> os nomes parâmetros que podem variar são <span class="math">\(p\)</span> (probabilidade da primeira captura), <span class="math">\(c\)</span> (probabilidade de recaptura) <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. O objeto criado na seção acima tem uma covariável de tempo chamada <code>time</code>, que então pode ser usado nas fórmulas para expressar diferenças entre ocasiões:</p>
 <pre class="r"><code>## Fórmulas estatísticas para cada parâmetro do modelo sem heterogeneidade
 ## p e c constantes mas diferentes
 t.dot &lt;- list(formula=~1)
@@ -117,39 +119,54 @@ t.time &lt;- list(formula=~time)
 ## Parametro p=c dependem do tempo
 t.timeshared &lt;- list(formula=~time, share=TRUE)</code></pre>
 <p>E usamos a função <code>mark</code> para fazer os ajuste:</p>
-<pre class="r"><code>boto.M0 &lt;- mark(boto, model.parameters=list(p=t.dotshared))
-boto.Mb &lt;- mark(boto, model.parameters=list(c=t.dot, p=t.dot))</code></pre>
+<pre class="r"><code>boto.M0 &lt;- mark(boto, model.parameters=list(p=t.dotshared),
+                model.name=&quot;M0&quot;, adjust=TRUE)
+boto.Mb &lt;- mark(boto, model.parameters=list(c=t.dot, p=t.dot),
+                model.name=&quot;Mb&quot;, adjust=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 2 parameters counted of 3 specified parameters
 ## 
 ## AICc and parameter count have been adjusted upward</code></pre>
-<pre class="r"><code>boto.Mt &lt;- mark(boto, model.parameters=list(p=t.timeshared))
-boto.Mtb &lt;- mark(boto, model.parameters=list(c=t.time, p=t.time))</code></pre>
+<pre class="r"><code>boto.Mt &lt;- mark(boto, model.parameters=list(p=t.timeshared), model.name=&quot;Mt&quot;,
+                adjust=TRUE)
+boto.Mtb &lt;- mark(boto, model.parameters=list(c=t.time, p=t.time),
+                 model.name=&quot;Mtb&quot;, adjust=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 18 parameters counted of 22 specified parameters
 ## 
 ## AICc and parameter count have been adjusted upward</code></pre>
+<p>Se omitimos a função de um parâmetro ela será constante. Portanto para todos os modelos acima a expressão para o parâmetro <span class="math">\(f_0\)</span> é <code>formula=~1</code>.</p>
 </div>
 <div id="ajuste-dos-modelos-com-heterogeneidade" class="section level3">
 <h3>Ajuste dos modelos com heterogeneidade</h3>
-<p>Para os modelos com heterogeneidade acrescente o termo <code>mixture</code> nas fórmulas do parâmetro p:</p>
+<p>Para os modelos com heterogeneidade acrescente o termo <code>mixture</code> nas fórmulas do parâmetro <span class="math">\(p\)</span>. O <em>default</em> é uma mistura de duas subpopulações, o que representa que uma proporção <span class="math">\(\pi\)</span> dos indivíduos tem uma probabilidade de captura/recaptura e o restante (<span class="math">\(1-\pi\)</span>) tenha outra.</p>
+<p>No modelo com efeito de ocasião, use uma fórmula com interação. Com isso as probabilidades de captura e recaptura de cada subpopulação poderão ser diferentes a cada ocasião.</p>
 <pre class="r"><code>## Fórmulas estatísticas para cada parâmetro do modelo com heterogeneidade
 ## p com heterogeneidade
 t.mix &lt;- list(formula=~mixture)
 ## p=c com heterogeneidade (use o argumento share=TRUE)
 t.mixshared=list(formula=~mixture,share=TRUE)
-## Parametros dependem do tempo
-t.timemixshared &lt;- list(formula=~time+mixture, share=TRUE)
-t.timemix &lt;- list(formula=~time+mixture)</code></pre>
+## Parametros diferem entre ocasiões
+t.timemixshared &lt;- list(formula=~time*mixture, share=TRUE)
+t.timemix &lt;- list(formula=~time*mixture)</code></pre>
 <p>E ajuste os modelos</p>
-<pre class="r"><code>boto.Mh &lt;- mark(botoH, model.parameters=list(p=t.mixshared))
-boto.Mbh &lt;- mark(botoH, model.parameters=list(c=t.mix, p=t.mix))
-boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timeshared))
-boto.Mtbh &lt;- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix))</code></pre>
+<pre class="r"><code>boto.Mh &lt;- mark(botoH, model.parameters=list(p=t.mixshared),
+                model.name=&quot;Mh&quot;, adjust=TRUE)
+boto.Mbh &lt;- mark(botoH, model.parameters=list(c=t.mix, p=t.mix),
+                 model.name=&quot;Mbh&quot;, adjust=TRUE)
+boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
+                 model.name=&quot;Mth&quot;, adjust=TRUE)</code></pre>
 <pre><code>## 
-## Note: only 22 parameters counted of 25 specified parameters
+## Note: only 19 parameters counted of 24 specified parameters
 ## 
 ## AICc and parameter count have been adjusted upward</code></pre>
+<pre class="r"><code>boto.Mtbh &lt;- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix),
+                  model.name=&quot;Mtbh&quot;, adjust=TRUE)</code></pre>
+<pre><code>## 
+## Note: only 25 parameters counted of 44 specified parameters
+## 
+## AICc and parameter count have been adjusted upward</code></pre>
+<p>Note que em todos os modelos acima os parâmetros <span class="math">\(f_0\)</span> e <span class="math">\(\pi\)</span> são constantes, pois omitimos suas fórmulas.</p>
 </div>
 </div>
 <div id="selecao-de-modelos" class="section level2">
@@ -158,76 +175,81 @@ boto.Mtbh &lt;- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix))</co
 <pre class="r"><code>collect.models(lx=c(&quot;boto.M0&quot;, &quot;boto.Mb&quot;, &quot;boto.Mt&quot;, &quot;boto.Mtb&quot;,
                    &quot;boto.Mh&quot;, &quot;boto.Mbh&quot;, &quot;boto.Mth&quot;, &quot;boto.Mtbh&quot;))</code></pre>
 <pre><code>## Warning in model.table(x, type, pf = 2, adjust = adjust): Model list contains models of differing types</code></pre>
-<pre><code>##                                              model npar     AICc DeltaAICc
-## 8 pi(~1)p(~time + mixture)c(~time + mixture)f0(~1)   25 263.7916  0.000000
-## 3                                p(~time)c()f0(~1)   12 270.1989  6.407315
-## 7                          pi(~1)p(~time)c()f0(~1)   12 270.1989  6.407315
-## 6               pi(~1)p(~mixture)c(~mixture)f0(~1)    6 275.2837 11.492157
-## 5                       pi(~1)p(~mixture)c()f0(~1)    4 275.6888 11.897169
-## 4                           p(~time)c(~time)f0(~1)   22 282.6256 18.833993
-## 1                                   p(~1)c()f0(~1)    2 289.7349 25.943289
-## 2                                 p(~1)c(~1)f0(~1)    3 290.1108 26.319260
-##         weight Deviance
-## 8 9.198640e-01 156.7423
-## 3 3.735880e-02 191.7698
-## 7 3.735880e-02 191.7698
-## 6 2.939230e-03 209.4365
-## 5 2.400414e-03 213.9520
-## 4 7.481247e-05 182.3529
-## 1 2.138996e-06 232.0679
-## 2 1.772430e-06 230.4140</code></pre>
+<pre><code>##   model npar     AICc DeltaAICc       weight Deviance
+## 7   Mth   24 252.9300   0.00000 9.997964e-01 148.1513
+## 3    Mt   12 270.1989  17.26893 1.778327e-04 191.7698
+## 6   Mbh    6 275.2837  22.35377 1.399112e-05 209.4365
+## 5    Mh    4 275.6888  22.75878 1.142628e-05 213.9520
+## 4   Mtb   22 282.6256  29.69561 3.561171e-07 182.3529
+## 1    M0    2 289.7349  36.80490 1.018190e-08 232.0679
+## 2    Mb    3 290.1108  37.18087 8.436994e-09 230.4140
+## 8  Mtbh   44 291.2933  38.36331 4.671170e-09 138.7168</code></pre>
 </div>
 <div id="valores-das-estimativas" class="section level2">
 <h2>Valores das estimativas</h2>
 <p>A função <code>coef</code> retorna os coeficientes na escala de ligação (logito). Para as estimativas na escala de probabilidades use a função <code>get.real</code>:</p>
-<pre class="r"><code>coef(boto.Mtbh, data=boto2002)</code></pre>
-<pre><code>##                   estimate           se           lcl           ucl
-## pi:(Intercept)  -1.8513489    0.6055811 -3.038288e+00    -0.6644099
-## p:(Intercept)    1.8247548    1.5984779 -1.308262e+00     4.9577716
-## p:time2          0.3147819    0.6133098 -8.873054e-01     1.5168692
-## p:time3          0.5439830    0.6672662 -7.638588e-01     1.8518247
-## p:time4          0.9695359    0.7441983 -4.890928e-01     2.4281645
-## p:time5         -0.4569379    1.1775724 -2.764980e+00     1.8511040
-## p:time6          0.7470404    1.0099520 -1.232465e+00     2.7265462
-## p:time7          0.4593538    1.2987178 -2.086133e+00     3.0048407
-## p:time8        -20.8649350 9344.3229000 -1.833574e+04 18294.0080000
-## p:time9        -20.8648640 9344.2937000 -1.833568e+04 18293.9510000
-## p:time10         1.1525015    1.4787372 -1.745823e+00     4.0508265
-## p:time11        37.8870680    0.0000000  3.788707e+01    37.8870680
-## p:mixture2      -2.9772619    1.6427708 -6.197093e+00     0.2425689
-## c:(Intercept)    0.6699597    0.8386196 -9.737347e-01     2.3136542
-## c:time3          0.1287247    0.9198628 -1.674206e+00     1.9316559
-## c:time4          1.3449288    0.8545626 -3.300139e-01     3.0198715
-## c:time5          1.4845697    0.8378902 -1.576952e-01     3.1268346
-## c:time6          0.3162237    0.8547949 -1.359174e+00     1.9916217
-## c:time7          1.0357796    0.8328214 -5.965504e-01     2.6681097
-## c:time8         -1.8531416    1.0592195 -3.929212e+00     0.2229286
-## c:time9         -0.6809400    0.9019190 -2.448701e+00     1.0868214
-## c:time10        -0.9872058    0.9302659 -2.810527e+00     0.8361153
-## c:time11        -0.7041139    0.9007102 -2.469506e+00     1.0612781
-## c:mixture2      -2.3847999    0.4685454 -3.303149e+00    -1.4664509
-## f0:(Intercept) -18.2862960    0.0000000 -1.828630e+01   -18.2862960</code></pre>
+<pre class="r"><code>coef(boto.Mth, data=boto2002)</code></pre>
+<pre><code>##                      estimate          se         lcl         ucl
+## pi:(Intercept)     -1.9020494   0.4820136   -2.846796  -0.9573028
+## p:(Intercept)      25.2537360  99.8003750 -170.355000 220.8624700
+## p:time2           -24.8482480  99.8040080 -220.464110 170.7676100
+## p:time3           -24.8482040  99.8040080 -220.464060 170.7676600
+## p:time4           -23.8673530  99.8046400 -219.484450 171.7497500
+## p:time5            17.4101970 398.0737000 -762.814260 797.6346500
+## p:time6           -25.6591570  99.8039790 -221.274960 169.9566400
+## p:time7           -24.8482470  99.8033360 -220.462790 170.7663000
+## p:time8           -25.6591460  99.8044480 -221.275870 169.9575800
+## p:time9            19.6995500   0.0000000   19.699550  19.6995500
+## p:time10          -25.6591480  99.8049790 -221.276910 169.9586100
+## p:time11          -25.6591570  99.8049480 -221.276860 169.9585400
+## p:mixture2        -26.5848800  99.8005030 -222.193870 169.0241100
+## p:time2:mixture2   25.1780150  99.8048430 -170.439480 220.7955100
+## p:time3:mixture2   25.1780170  99.8048430 -170.439480 220.7955100
+## p:time4:mixture2   24.8672550  99.8052720 -170.751080 220.4855900
+## p:time5:mixture2  -16.6620960 398.0737000 -796.886570 763.5623800
+## p:time6:mixture2   25.9889400  99.8048110 -169.628490 221.6063700
+## p:time7:mixture2   25.5963530  99.8040130 -170.019520 221.2122200
+## p:time8:mixture2  -34.4037160   0.0000000  -34.403716 -34.4037160
+## p:time9:mixture2  -59.4752620   0.0000000  -59.475262 -59.4752620
+## p:time10:mixture2  24.6712750  99.8070500 -170.950550 220.2931000
+## p:time11:mixture2  24.9923130  99.8065750 -170.628580 220.6132000
+## f0:(Intercept)      0.4040459   1.1144923   -1.780359   2.5884508</code></pre>
 <pre class="r"><code>## Na escala de probabilidades
-get.real(boto.Mtbh, parameter=&quot;p&quot;)</code></pre>
+get.real(boto.Mth, parameter=&quot;p&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                   1         2         3         4         5         6
-## mixture:1 0.8611357 0.8946870 0.9144121 0.9423665 0.7970272 0.9290242
-## mixture:2 0.2400314 0.3020141 0.3523959 0.4543844 0.1666657 0.3999996
-##                   7            8            9        10 11
-## mixture:1 0.9075523 5.382139e-09 5.382518e-09 0.9515360  1
-## mixture:2 0.3333320 2.741236e-10 2.741429e-10 0.4999986  1</code></pre>
-<pre class="r"><code>get.real(boto.Mtbh, parameter=&quot;c&quot;)</code></pre>
-<pre><code>## [[1]]
-##                   2         3         4         5         6         7
-## mixture:1 0.6614941 0.6896930 0.8823514 0.8960913 0.7283334 0.8462828
-## mixture:2 0.1525370 0.1699311 0.4085624 0.4426854 0.1980357 0.3364710
-##                   8        9        10        11
-## mixture:1 0.2344806 0.497255 0.4213470 0.4914623
-## mixture:2 0.0274386 0.083495 0.0628527 0.0817387</code></pre>
-<pre class="r"><code>get.real(boto.Mtbh, parameter=&quot;pi&quot;)</code></pre>
+## mixture:1 1.0000000 0.6000055 0.6000159 0.8000141 1.0000000 0.4000104
+## mixture:2 0.2089701 0.2686708 0.2686796 0.4179384 0.3582326 0.2686738
+##                   7            8            9        10        11
+## mixture:1 0.6000057 4.000131e-01 1.000000e+00 0.4000127 0.4000105
+## mixture:2 0.3582340 2.172309e-27 1.404492e-18 0.0895602 0.1194143</code></pre>
+<pre class="r"><code>get.real(boto.Mth, parameter=&quot;pi&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                    
-## mixture:1 0.1357146</code></pre>
+## mixture:1 0.1298767</code></pre>
+<pre class="r"><code>get.real(boto.Mth, parameter=&quot;f0&quot;) ##N de indivíduos não registrados</code></pre>
+<pre><code>## [[1]]
+##         1
+##  1.497873</code></pre>
+<div id="estimativa-do-tamanho-populacional" class="section level3">
+<h3>Estimativa do tamanho populacional</h3>
+<p>A estimativa de interesse é o tamanho da população, que é obtido somando-se a <span class="math">\(f_0\)</span> ao total de indivíduos registrados. Usamos a função <code>get.real</code> com argumento <code>se=TRUE</code> para obter os intervalos de confiança<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
+<pre class="r"><code>(boto.f0.ic &lt;- as.numeric(get.real(boto.Mth, parameter=&quot;f0&quot;, se=TRUE)[,5:6]))</code></pre>
+<pre><code>## [1] 0.2573981 8.7165479</code></pre>
+<p>O número de indivíduos registrados é a soma das frequências no objeto processado</p>
+<pre class="r"><code>(boto.Nobs &lt;- sum(boto$freq))</code></pre>
+<pre><code>## [1] 37</code></pre>
+<p>E finalmente temos o intervalo de confiança do tamanho populacional</p>
+<pre class="r"><code>(boto.Nobs + boto.f0.ic)</code></pre>
+<pre><code>## [1] 37.25740 45.71655</code></pre>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>O parâmetro <span class="math">\(f_0\)</span> (número de indivíduos não registrados em nenhuma ocasião) é constante por definição, já que a população é fechada.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Para uma lista com todos os coeficientes e seus intervalos use a função <code>summary</code> com a opção <code>se=TRUE</code>.<a href="#fnref2">↩</a></p></li>
+</ol>
 </div>
 
 

@@ -19,15 +19,15 @@ output:
 ## Preparação
 
 Vamos usar o pacote _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
-Siga as instruções deste sítio para instalar o MARK para uso pelo pacote: (http://www.phidot.org/software/mark/rmark/).
+Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmark/) para instalar o pacote.
 
 Abra o R e carregue o pacote
 
 ```{r}
 library(RMark)
 ```
-Usaremos dados de registro fotográfico de indivíduos do boto cinza (_Sotalia guianensis_) em 11 ocasiões.
-[Aqui](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_7_abundancia_botos.pdf)
+Usaremos dados de registros fotográficos de indivíduos do boto cinza (_Sotalia guianensis_) em 11 ocasiões. 
+[Aqui](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_7_abundancia_botos.pdf) 
 há mais informações sobre este caso de estudo.
 
 Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para importá-lo para o R:
@@ -41,12 +41,12 @@ boto2002 <- convert.inp(url)
 
 ## Ajuste dos modelos
 ### Processamento dos dados
-O primeiro passo é usar a função `process.data` para criar um objeto
-com as informações que o Mark usa para ajustar o modelo. Uma delas
+O primeiro passo é usar a função `process.data` para criar um objeto 
+com as informações que o Mark usa para ajustar o modelo. Uma delas 
 é o tipo de modelo, que é indicado no argumento `model`.
 
-Para o modelo de populações fechada sem heterogeneidade e de
-verossimilhança não condicionada este argumento é
+Para o modelo de populações fechada sem heterogeneidade e de 
+verossimilhança condicionada este argumento é 
 `model="Closed"`:
 
 ```{r}
@@ -61,9 +61,9 @@ botoH <- process.data(data=boto2002, model="FullHet")
 ### Ajuste dos modelos sem heterogeneidade
 
 Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
-No modelo `Closed` os nomes parâmetros que podem variar são `p` (probabilidade da primeira captura),
-`c` (probabilidade de recaptura). O objeto criado na seção acima tem uma covariável de tempo
-chamada `time`, que então pode ser usado nas fórmulas:
+No modelo `Closed` os nomes parâmetros que podem variar são $p$ (probabilidade da primeira captura),
+$c$ (probabilidade de recaptura) [^1]. O objeto criado na seção acima tem uma covariável de tempo
+chamada `time`, que então pode ser usado nas fórmulas para expressar diferenças entre ocasiões:
 
 ```{r}
 ## Fórmulas estatísticas para cada parâmetro do modelo sem heterogeneidade
@@ -80,16 +80,31 @@ t.timeshared <- list(formula=~time, share=TRUE)
 E usamos a função `mark` para fazer os ajuste:
 
 ```{r, results="hide", warning=FALSE}
-boto.M0 <- mark(boto, model.parameters=list(p=t.dotshared))
-boto.Mb <- mark(boto, model.parameters=list(c=t.dot, p=t.dot))
-boto.Mt <- mark(boto, model.parameters=list(p=t.timeshared))
-boto.Mtb <- mark(boto, model.parameters=list(c=t.time, p=t.time))
+boto.M0 <- mark(boto, model.parameters=list(p=t.dotshared),
+                model.name="M0", adjust=TRUE)
+boto.Mb <- mark(boto, model.parameters=list(c=t.dot, p=t.dot),
+                model.name="Mb", adjust=TRUE)
+boto.Mt <- mark(boto, model.parameters=list(p=t.timeshared), model.name="Mt",
+                adjust=TRUE)
+boto.Mtb <- mark(boto, model.parameters=list(c=t.time, p=t.time),
+                 model.name="Mtb", adjust=TRUE)
 ```
+
+Se omitimos a função de um parâmetro ela será constante.
+Portanto para todos os modelos acima a expressão para o
+parâmetro $f_0$ é `formula=~1`.
 
 ### Ajuste dos modelos com heterogeneidade
 
 Para os modelos com heterogeneidade acrescente o termo `mixture`
-nas fórmulas do parâmetro p:
+nas fórmulas do parâmetro $p$. O _default_ é uma mistura de duas subpopulações,
+o que representa que uma proporção $\pi$ dos indivíduos tem uma probabilidade
+de captura/recaptura e o restante ($1-\pi$) tenha outra.
+
+No modelo com efeito de ocasião, use uma fórmula com interação.
+Com isso as probabilidades de captura e recaptura de cada subpopulação
+poderão ser diferentes a cada ocasião.
+
 
 ```{r}
 ## Fórmulas estatísticas para cada parâmetro do modelo com heterogeneidade
@@ -97,18 +112,27 @@ nas fórmulas do parâmetro p:
 t.mix <- list(formula=~mixture)
 ## p=c com heterogeneidade (use o argumento share=TRUE)
 t.mixshared=list(formula=~mixture,share=TRUE)
-## Parametros dependem do tempo
-t.timemixshared <- list(formula=~time+mixture, share=TRUE)
-t.timemix <- list(formula=~time+mixture)
+## Parametros diferem entre ocasiões
+t.timemixshared <- list(formula=~time*mixture, share=TRUE)
+t.timemix <- list(formula=~time*mixture)
 ```
 E ajuste os modelos
 
 ```{r, results="hide", warning=FALSE}
-boto.Mh <- mark(botoH, model.parameters=list(p=t.mixshared))
-boto.Mbh <- mark(botoH, model.parameters=list(c=t.mix, p=t.mix))
-boto.Mth <- mark(botoH, model.parameters=list(p=t.timeshared))
-boto.Mtbh <- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix))
+boto.Mh <- mark(botoH, model.parameters=list(p=t.mixshared),
+                model.name="Mh", adjust=TRUE)
+boto.Mbh <- mark(botoH, model.parameters=list(c=t.mix, p=t.mix),
+                 model.name="Mbh", adjust=TRUE)
+boto.Mth <- mark(botoH, model.parameters=list(p=t.timemixshared),
+                 model.name="Mth", adjust=TRUE)
+boto.Mtbh <- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix),
+                  model.name="Mtbh", adjust=TRUE)
 ```
+
+Note que em todos os modelos acima os parâmetros $f_0$ e $\pi$
+são constantes, pois omitimos suas fórmulas.
+
+
 ## Seleção de modelos
 A função abaixo retorna a tabela de seleção de modelos:
 
@@ -121,10 +145,37 @@ A função `coef` retorna os coeficientes na escala de ligação (logito).
 Para as estimativas na escala de probabilidades use a função `get.real`:
 
 ```{r}
-coef(boto.Mtbh, data=boto2002)
+coef(boto.Mth, data=boto2002)
 ## Na escala de probabilidades
-get.real(boto.Mtbh, parameter="p")
-get.real(boto.Mtbh, parameter="c")
-get.real(boto.Mtbh, parameter="pi")
+get.real(boto.Mth, parameter="p")
+get.real(boto.Mth, parameter="pi")
+get.real(boto.Mth, parameter="f0") ##N de indivíduos não registrados
+```
+### Estimativa do tamanho populacional
+
+A estimativa de interesse é o tamanho da população, que
+é obtido somando-se a $f_0$ ao total de indivíduos registrados.
+Usamos a função `get.real` com argumento `se=TRUE` para obter
+os intervalos de confiança[^2]:
+
+```{r, warning=FALSE}
+(boto.f0.ic <- as.numeric(get.real(boto.Mth, parameter="f0", se=TRUE)[,5:6]))
 ```
 
+O número de indivíduos registrados é a soma das frequências no objeto processado
+
+```{r}
+(boto.Nobs <- sum(boto$freq))
+```
+
+E finalmente temos o intervalo de confiança do tamanho populacional
+
+```{r}
+(boto.Nobs + boto.f0.ic)
+```
+
+[^1]: O parâmetro $f_0$ (número de indivíduos não registrados em nenhuma ocasião)
+é constante por definição, já que a população é fechada.
+
+[^2]: Para uma lista com todos os coeficientes e seus intervalos
+use a função `summary` com a opção `se=TRUE`.

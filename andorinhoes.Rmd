@@ -1,0 +1,129 @@
+---
+title: "Modelos de marcação e recaptura: populações abertas: Cormak-Jolly-Seber"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+-------
+
+
+* [Arquivo em pdf](./andorinhoes.pdf)
+* [Arquivo em markdown](./andorinhoes.Rmd) (para executar os comandos no R studio)
+
+-------
+## Preparação
+
+Vamos usar o pacote _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
+Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmark/) para instalar o pacote.
+
+Com o RMark instalado, abra o R e carregue-o:
+
+```{r}
+library(RMark)
+```
+Usaremos dados de marcação e recaptura de andorinhões (_Apus apus_) em 8 ocasiões. 
+[Aqui](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_8_andorinhao.pdf) 
+há mais informações sobre este caso de estudo.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para importá-lo para o R.
+Como o arquivo tem uma covariável (tipo de colônia) com dois estados, você deve informar
+isso com o argumento `group.df` [^1]:
+
+```{r, warning=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:aa.inp"
+## Importa arquivo inp
+and.raw <- convert.inp(url, group.df=data.frame(colony=c("exposed","protected")))
+```
+
+## Ajuste dos modelos
+### Processamento dos dados
+O primeiro passo é usar a função `process.data` para criar um objeto 
+com as informações que o Mark usa para ajustar o modelo. Uma delas 
+é o tipo de modelo, que é indicado no argumento `model`.
+
+Vamos usar o modelo Cormarck-Jolly-Seber, cuja a sigla no RMark é "CJS" [^2]: 
+
+```{r}
+andor <- process.data(data=and.raw, model="CJS", groups="colony")
+```
+
+### Ajuste dos modelos
+
+Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
+No modelo `CJS` os nomes parâmetros são `Phi`
+($\phi$, probabilidade de sobrevivência entre capturas), `p`
+($p$, probabilidade de recaptura). 
+
+Além da covariável de tipo de colônia que indicamos neste caso, o RMark
+já cria algumas outras para cada tipo de modelo.
+No modelo CJS há uma covariável
+chamada `time`, com um nível para cada ocasião de captura.
+Há também uma covariável
+de identidade da coorte (`cohort`), entre outras [^3]. 
+
+Podemos então criar objetos com as fórmulas para diferentes combinações dessas covariáveis.
+Algumas possibilidades:
+
+```{r}
+## Fórmulas estatísticas para cada parâmetro do modelo
+## formula para expressar um parâmetro constante
+f.dot <- list(formula=~1)
+## formula para expressar um parametro que varia em funcao do tempo
+f.time <- list(formula=~time)
+## parametro depende do tipo de colonia
+f.col <- list(formula=~colony)
+## parametro depende do tipo de colonia e tempo
+f.coltime <- list(formula= ~colony + time)
+## Interacao tempo x colonia
+## o efeito de colonia varia com o tempo de maneira diferente entre colonias
+f.coltime2 <- list(formula= ~colony * time)
+## Sobrevivencia depende da coorte e da colonia
+f.cohcol <- list(formula=~cohort+colony)
+## 
+```
+
+E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas:
+
+```{r, results="hide", warning=FALSE}
+a1 <- mark(andor, model.parameters=list(p=f.dot, Phi=f.dot))
+a2 <- mark(andor, model.parameters=list(p=f.time, Phi=f.time))
+a3 <- mark(andor, model.parameters=list(p=f.time, Phi=f.col))
+a4 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime))
+a5 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime2))
+a6 <- mark(andor, model.parameters=list(p=f.time, Phi=f.cohcol))
+```
+
+## Seleção de modelos
+A função abaixo retorna a tabela de seleção de modelos:
+
+```{r}
+collect.models(lx=c("a1", "a2", "a3", "a4", "a5", "a6"))
+```
+## Valores das estimativas
+A função `coef` retorna os coeficientes na escala de ligação (logito).
+Para as estimativas na escala de probabilidades use a função `get.real`:
+
+```{r}
+coef(a3, data=and.raw)
+## Na escala de probabilidades
+get.real(a3, parameter="Phi")
+get.real(a3, parameter="p")
+```
+## Para saber mais
+* Para outro exemplo de ajuste do modelo CJS e outras funções úteis do RMark digite `?dipper`
+* Veja também os pacotes Rcapture e marked
+
+[^1]: Veja a ajuda da função `convert.inp` para detalhes.
+
+[^2]: A lista de modelos implementados no RMark está no diretório onde o R instalou o pacote.
+Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf).
+
+[^3]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
+que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
+estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.

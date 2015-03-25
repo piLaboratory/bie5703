@@ -17,11 +17,10 @@ output:
 
 -------
 ## Preparação
-
 Vamos usar o pacote _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
 Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmark/) para instalar o pacote.
 
-Abra o R e carregue o pacote
+Com o RMark instalado, abra o R e carregue-o:
 
 ```{r}
 library(RMark)
@@ -47,7 +46,7 @@ com as informações que o Mark usa para ajustar o modelo. Uma delas
 
 Para o modelo de populações fechada sem heterogeneidade e de 
 verossimilhança condicionada este argumento é 
-`model="Closed"`:
+`model="Closed"` [^3]:
 
 ```{r}
 boto <- process.data(data=boto2002, model="Closed")
@@ -61,9 +60,9 @@ botoH <- process.data(data=boto2002, model="FullHet")
 ### Ajuste dos modelos sem heterogeneidade
 
 Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
-No modelo `Closed` os nomes parâmetros que podem variar são $p$ (probabilidade da primeira captura),
-$c$ (probabilidade de recaptura) [^1]. O objeto criado na seção acima tem uma covariável de tempo
-chamada `time`, que então pode ser usado nas fórmulas para expressar diferenças entre ocasiões:
+No modelo `Closed` os nomes parâmetros que podem variar são `p` ($p$ ,probabilidade da primeira captura) e
+`c` ($c$, probabilidade de recaptura) [^1]. O objeto criado na seção acima tem uma covariável de tempo
+chamada `time`, que então pode ser usado nas fórmulas para expressar diferenças entre ocasiões [^4]:
 
 ```{r}
 ## Fórmulas estatísticas para cada parâmetro do modelo sem heterogeneidade
@@ -183,3 +182,10 @@ Confira isto executando o [roteiro do Rcapture](http://ecologia.ib.usp.br/bie570
 
 [^2]: Para uma lista com todos os coeficientes e seus intervalos
 use a função `summary` com a opção `se=TRUE`.
+
+[^3]: A lista de modelos implementados no RMark está no diretório onde o R instalou o pacote.
+Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf).
+
+[^4]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
+que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
+estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.

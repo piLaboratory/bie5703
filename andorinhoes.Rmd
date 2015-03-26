@@ -106,15 +106,24 @@ A função abaixo retorna a tabela de seleção de modelos:
 collect.models(lx=c("a1", "a2", "a3", "a4", "a5", "a6"))
 ```
 ## Valores das estimativas
-A função `coef` retorna os coeficientes na escala de ligação (logito).
-Para as estimativas na escala de probabilidades use a função `get.real`:
+Os objetos dos modelos ajustados são uma lista com todo o output do Mark.
+Esta lista tem um elemento `results`, com os valores dos coeficientes e muito
+mais [^4]: 
 
 ```{r}
-coef(a3, data=and.raw)
-## Na escala de probabilidades
-get.real(a3, parameter="Phi")
-get.real(a3, parameter="p")
+names(a3$results)
 ```
+Os coeficientes na escala da função de ligação estão no dataframe `beta` desta lista
+
+```{r}
+a3$results$beta
+```
+E os coeficientes na escala original de probabilidades estão no dataframe `real`
+
+```{r}
+a3$results$real
+```
+
 ## Para saber mais
 * Para outro exemplo de ajuste do modelo CJS e outras funções úteis do RMark digite `?dipper`
 * Veja também os pacotes Rcapture e marked
@@ -127,3 +136,5 @@ Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (htt
 [^3]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
 que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
 estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^4]: Consulte o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.

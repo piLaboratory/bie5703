@@ -1,0 +1,260 @@
+---
+title: "Modelos de marcação e recaptura: delineamento robusto"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+-------
+
+
+* [Arquivo em pdf](./albatrozes.pdf)
+* [Arquivo em markdown](./albatrozes.Rmd) (para executar os comandos no R studio)
+
+-------
+## Preparação
+
+Vamos usar o  _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
+Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmark/) para instalação.
+
+Com o RMark instalado, abra o R e carregue-o:
+
+```{r}
+library(RMark)
+```
+Usaremos dados de marcação e recaptura de albatrozes (_Phoebastria immutabilis_) no atol de Midway.
+Foi usado o [delineamento robusto de Pollock](http://www.phidot.org/software/mark/docs/book/pdf/chap15.pdf),
+com quatro ocasiões primárias com duas ocasiões secundárias cada.
+[Aqui](http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:exercicio_9b_albatroz_robusto.pdf) 
+há mais informações sobre este caso de estudo.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para importá-lo para o R:
+
+```{r, warning=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:albatroz.inp"
+## Importa arquivo inp
+## use.comments=TRUE usa os rótulos das linhas (id dos indivíduos)
+alb.raw <- convert.inp(url, use.comments=TRUE)
+```
+
+## Ajuste dos modelos
+### Processamento dos dados
+O primeiro passo é usar a função `process.data` para criar um objeto 
+com as informações que o Mark precisa para ajustar o modelo. Uma delas 
+é o tipo de modelo, que é indicado no argumento `model`.
+
+Vamos usar o modelo robusto para populações fechadas, cuja a sigla no RMark é "Robust" [^2].
+
+Para esta classe de modelos indique os intervalos de tempo
+com um vetor em que os zeros indicam os momentos em que a população é considerada fechada.
+Os elementos diferentes de zero indicam a duração de cada intervalo.
+Neste exercício os intervalos entre as ocasiões são todos de um ano, com duas instâncias secundárias cada,
+o que representamos com um vetor de valores $1$ e $0$. Note que omitimos o último valor, que
+é sempre não zero, por definição.
+
+```{r}
+## Vetor de intervalos (zero = fechamento)
+ti <- c(0, 1, 0, 1, 0, 1, 0)
+## Processa os dados
+alb <- process.data(data=alb.raw, model="Robust", time.intervals=ti)
+```
+
+O objeto resultante é uma lista, na qual podemos conferir
+o número de ocasiões primárias e secundárias, por exemplo:
+
+```{r}
+## N de ocasiões primárias
+alb$nocc
+## N de ocasiões secundárias em cada primária
+alb$nocc.secondary
+```
+
+### Ajuste dos modelos
+
+Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
+No modelo `Robust` os nomes parâmetros são:
+
+*  `S` : probabilidade de sobrevivência aparente entre capturas ($S$),
+*  `p` : probabilidade de recaptura ($c$),
+*  `GammaPrime` : probabilidade de permanecer não amostrável entre duas amostragens ($\gamma '$)
+*  `GammaDoublePrime` : probabilidade de tornar-se não amostrável entre duas amostragens (emigração temporária, $\gamma ''$)
+*  `f0` : número de indivíduos que não foram registrados.
+
+Quando processamos os dados o RMark
+já cria algumas covariáveis para cada tipo de modelo.
+No modelo robusto há uma covariável
+chamada `session`, com um nível para cada ocasião primária de captura,
+e outra chama `time`, com um nível para cada intervalo entre seções primárias [^3]. 
+
+Podemos então criar objetos com as fórmulas para diferentes combinações dessas covariáveis.
+Algumas possibilidades:
+
+```{r}
+## Fórmulas estatísticas para cada parâmetro do modelo
+## formula para expressar um parâmetro constante
+f.dot <- list(formula=~1)
+## formula para expressar um parametro que varia em funcao das ocasiões primarias
+f.occ <- list(formula=~-1+session)
+## formula para expressar um parametro que varia a cada ano
+f.time <- list(formula=~-1+time)
+## formula para expressar os parâmetro fixos em zero
+f.zero <- list(formula=~1, fixed=0)
+```
+
+Para indicar que dois parâmetros devem ser iguais,
+acrescente à lista `share=TRUE` [^5]:
+```{r}
+## Fórmulas estatísticas para parametros relacionados iguais
+## (usa-se para fazer
+## GammaPrime = GammaDoublePrime e  c = p)
+## formula para expressar dois parâmetros relacionados constantes
+f.dot.s <- list(formula=~1, share=TRUE)
+## formula para expressar que os parametros variam em funcao das ocasiões primarias
+f.occ.s <- list(formula=~-1+session, share=TRUE)
+## formula para expressar parametros que variam a cada ano
+f.time.s <- list(formula=~-1+time, share=TRUE)
+## formula para expressar parametros que variam entre ocasioes secundárias
+## Para os parametros de captura/recaptura
+f.time2.s <- list(formula=~-1+session:time, share=TRUE)
+
+```
+
+E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas:
+
+```{r, results="hide", warning=FALSE}
+alb1 <- mark(alb, model.parameters=
+                 list(S=f.time, GammaDoublePrime=f.time, GammaPrime=f.time,
+                      p=f.time2.s, f0=f.occ))
+alb2 <- mark(alb, model.parameters=
+                 list(S=f.time, GammaDoublePrime=f.time.s,
+                      p=f.time2.s, f0=f.occ))
+alb3 <- mark(alb, model.parameters=
+                 list(S=f.time, GammaDoublePrime=f.dot, GammaPrime=f.dot,
+                      p=f.time2.s, f0=f.occ))
+alb4 <- mark(alb, model.parameters=
+                 list(S=f.time, GammaDoublePrime=f.dot.s,
+                      p=f.time2.s, f0=f.occ))
+alb5 <- mark(alb, model.parameters=
+                 list(S=f.time, GammaDoublePrime=f.zero, GammaPrime=f.zero,
+                      p=f.time2.s, f0=f.occ))
+```
+
+## Seleção de modelos
+A função abaixo retorna a tabela de seleção de modelos:
+
+```{r}
+collect.models(lx=c("alb1", "alb2", "alb3", "alb4", "alb5"))
+```
+## Valores das estimativas
+Os objetos dos modelos ajustados são uma lista com todo o output do Mark.
+Esta lista tem um elemento `results`, com os valores dos coeficientes e muito
+mais [^4]:
+
+```{r}
+names(alb3$results)
+```
+Os coeficientes na escala da função de ligação estão no dataframe `beta` desta lista.
+Verifique estes valores para o modelo selecionado:
+
+```{r}
+alb3$results$beta
+```
+Os coeficientes na escala original de probabilidades estão no dataframe `real`
+
+```{r}
+alb3$results$real
+```
+E os tamanhos populacionais a cada ocasião (um parâmetro derivado) estão
+no dataframe `derived`:
+
+```{r}
+alb3$results$derived
+```
+
+## Coda: refinando a seleção de modelos
+As probabilidades de sobrevivência por ocasião estimadas pelo modelo selecionado são muito parecidas.
+Isso sugere que este parâmetro não varie entre ocasiões.
+Vamos incluir modelos com $S$ constante em nossa seleção para verificar:
+
+```{r, results="hide", warning=FALSE}
+alb6 <- mark(alb, model.parameters=
+                 list(S=f.dot, GammaDoublePrime=f.time, GammaPrime=f.time,
+                      p=f.time2.s, f0=f.occ))
+alb7 <- mark(alb, model.parameters=
+                 list(S=f.dot, GammaDoublePrime=f.time.s,
+                      p=f.time2.s, f0=f.occ))
+alb8 <- mark(alb, model.parameters=
+                 list(S=f.dot, GammaDoublePrime=f.dot, GammaPrime=f.dot,
+                      p=f.time2.s, f0=f.occ))
+alb9 <- mark(alb, model.parameters=
+                 list(S=f.dot, GammaDoublePrime=f.dot.s,
+                      p=f.time2.s, f0=f.occ))
+alb10 <- mark(alb, model.parameters=
+                 list(S=f.dot, GammaDoublePrime=f.zero, GammaPrime=f.zero,
+                      p=f.time2.s, f0=f.occ))
+```
+E repetimos a seleção de modelos:
+
+```{r}
+collect.models(lx=c("alb1", "alb2", "alb3", "alb4", "alb5",
+                   "alb6", "alb7", "alb8", "alb9", "alb10"))
+```
+E agora temos o empate com um modelo com $S$ constante mas parâmetros de migração variando com o tempo.
+
+Será que os dois modelos plausíveis dão estimativas similares dos parâmetros de interesse?
+Vamos verificar.
+
+O gráfico a seguir mostra os intervalos de confiança dos valores de $\gamma ''$
+estimados para cada tempo pelo modelo 6 (barras pretas) e
+o intervalo de confiança da estimativa de $\gamma ''$ constante pelo modelo 3 (linhas azuis):
+
+```{r}
+plot(1:3, alb6$results$real[2:4,1], xlab="Tempo", ylab="Gamma''",
+     ylim=range(alb6$results$real[2:4,3:4]))
+segments(x0=1:3, y0=alb6$results$real[2:4,3], x1=1:3, y1=alb6$results$real[2:4,4])
+abline(h=alb3$results$real[4,3:4], lty=2, col="blue")
+```
+
+A mesma comparação para o parâmetro $\gamma '$:
+
+```{r}
+plot(2:3, alb6$results$real[5:6,1], xlab="Tempo", ylab="Gamma'",
+     ylim=range(alb6$results$real[5:6,3:4]))
+segments(x0=2:3, y0=alb6$results$real[5:6,3], x1=2:3, y1=alb6$results$real[5:6,4])
+abline(h=alb3$results$real[5,3:4], lty=2, col="blue")
+```
+
+E por fim comparamos as estimativas dos tamanhos populacionais
+
+```{r}
+tempo <- 1:4 -0.05
+plot(tempo, alb6$results$derived[,1], xlab="Tempo", ylab="N",
+     ylim=range(alb6$results$derived[,3:4]))
+segments(x0=tempo, y0=alb6$results$derived[,3], x1=tempo, y1=alb6$results$derived[,4])
+tempo <- tempo+0.05
+points(tempo, alb3$results$derived[,1], col="blue")
+segments(x0=tempo, y0=alb3$results$derived[,3], x1=tempo, y1=alb3$results$derived[,4], col="blue")
+```
+
+
+## Para saber mais
+* Para outro exemplo de ajuste do modelo robusto e outras funções úteis do RMark digite `?robust`
+* Veja também o pacote Rcapture
+
+[^2]: A lista de modelos implementados no RMark está no diretório onde o R instalou o pacote.
+Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf).
+
+[^3]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
+que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
+estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^4]: Consulte o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^5]: O RMark permite reduzir pares de alguns parâmetros a uma só estimativa. No caso do modelo robusto, pode-se
+substituir os parâmetros $\gamma '$ e $\gamma ''$ por um só (_random emigration model_); e também subsituir os parâmetros
+$p$ e $c$ por um único (modelo sem resposta comportamental à captura). Veja final da seção C.3 e exemplo na seção C.19 do apêndice sobre o RMark no guia _online_ para mais detalhes.

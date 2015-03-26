@@ -232,11 +232,11 @@ abline(h=alb3$results$real[5,3:4], lty=2, col="blue")
 E por fim comparamos as estimativas dos tamanhos populacionais
 
 ```{r}
-tempo <- 1:4 -0.05
+tempo <- (1:4) -0.025
 plot(tempo, alb6$results$derived[,1], xlab="Tempo", ylab="N",
      ylim=range(alb6$results$derived[,3:4]))
 segments(x0=tempo, y0=alb6$results$derived[,3], x1=tempo, y1=alb6$results$derived[,4])
-tempo <- tempo+0.05
+tempo <- tempo + 0.05
 points(tempo, alb3$results$derived[,1], col="blue")
 segments(x0=tempo, y0=alb3$results$derived[,3], x1=tempo, y1=alb3$results$derived[,4], col="blue")
 ```

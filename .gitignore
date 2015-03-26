@@ -26,8 +26,9 @@
 # vim temp files
 .*.sw[opq]
 
-# Mark file
-*.inp
+# Mark files
+mark*.inp
+#*.inp
 *.res
 *.out
 *.vcv

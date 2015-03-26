@@ -8,6 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
+<meta name="author" content="Leonardo Wedekin e Paulo Inácio Prado (http://ecologia.ib.usp.br/bie5703)" />
 
 
 <title>Modelos de marcação e recaptura: populações fechadas</title>
@@ -61,6 +62,7 @@ img {
 
 <div id="header">
 <h1 class="title">Modelos de marcação e recaptura: populações fechadas</h1>
+<h4 class="author"><em>Leonardo Wedekin e Paulo Inácio Prado (<a href="http://ecologia.ib.usp.br/bie5703" class="uri">http://ecologia.ib.usp.br/bie5703</a>)</em></h4>
 </div>
 
 <div id="TOC">
@@ -189,59 +191,59 @@ boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
 <h2>Valores das estimativas</h2>
 <p>A função <code>coef</code> retorna os coeficientes na escala de ligação (logito). Para as estimativas na escala de probabilidades use a função <code>get.real</code>:</p>
 <pre class="r"><code>coef(boto.Mth, data=boto2002)</code></pre>
-<pre><code>##                      estimate          se          lcl          ucl
-## pi:(Intercept)     -1.9020421   0.4820127    -2.846787   -0.9572972
-## p:(Intercept)      18.3090910 134.8015500  -245.901940  282.5201300
-## p:time2           -17.9036270 134.8042400  -282.119940  246.3126900
-## p:time3           -17.9036270 134.8042400  -282.119940  246.3126800
-## p:time4           -16.9227970 134.8047500  -281.140110  247.2945100
-## p:time5            13.0369740 519.1676100 -1004.531600 1030.6055000
-## p:time6           -18.7145570 134.8042000  -282.930800  245.5016900
-## p:time7           -17.9036260 134.8037500  -282.118980  246.3117300
-## p:time8           -18.7145570 134.8045600  -282.931500  245.5023800
-## p:time9            14.2106290   0.9884737    12.273220   16.1480370
-## p:time10          -18.7145570 134.8049500  -282.932250  245.5031400
-## p:time11          -18.7145570 134.8049200  -282.932210  245.5031000
-## p:mixture2        -19.6402440 134.8016300  -283.851440  244.5709500
-## p:time2:mixture2   18.2334200 134.8048500  -245.984080  282.4509200
-## p:time3:mixture2   18.2334200 134.8048400  -245.984080  282.4509200
-## p:time4:mixture2   17.9227040 134.8052000  -246.295500  282.1409100
-## p:time5:mixture2  -12.2888660 519.1676300 -1029.857400 1005.2797000
-## p:time6:mixture2   19.0443500 134.8048100  -245.173080  283.2617800
-## p:time7:mixture2   18.6517340 134.8042400  -245.564580  282.8680500
-## p:time8:mixture2  -25.5098540   0.5643263   -26.615933  -24.4037740
-## p:time9:mixture2  -44.1134960   0.0992494   -44.308025  -43.9189680
-## p:time10:mixture2  17.7266660 134.8064700  -246.494010  281.9473500
-## p:time11:mixture2  18.0476880 134.8061200  -246.172310  282.2676800
-## f0:(Intercept)      0.4040043   1.1145563    -1.780526    2.5885348</code></pre>
+<pre><code>##                     estimate          se         lcl         ucl
+## pi:(Intercept)     -1.902042   0.4820127   -2.846787  -0.9572969
+## p:(Intercept)      19.659103 126.1803900 -227.654470 266.9726700
+## p:time2           -19.253638 126.1832600 -266.572840 228.0655600
+## p:time3           -19.253638 126.1832700 -266.572850 228.0655700
+## p:time4           -18.272809 126.1838000 -265.593060 229.0474400
+## p:time5            13.890129 488.3152200 -943.207720 970.9879700
+## p:time6           -20.064568 126.1832400 -267.383720 227.2545800
+## p:time7           -19.253638 126.1827400 -266.571810 228.0645300
+## p:time8           -20.064568 126.1836100 -267.384450 227.2553100
+## p:time9            15.282690   0.2111675   14.868802  15.6965780
+## p:time10          -20.064568 126.1840200 -267.385260 227.2561200
+## p:time11          -20.064568 126.1840000 -267.385200 227.2560700
+## p:mixture2        -20.990255 126.1804800 -268.304000 226.3234900
+## p:time2:mixture2   19.583431 126.1839200 -227.737050 266.9039100
+## p:time3:mixture2   19.583431 126.1839200 -227.737050 266.9039200
+## p:time4:mixture2   19.272716 126.1842900 -228.048500 266.5939300
+## p:time5:mixture2  -13.142021 488.3152300 -970.239880 943.9558400
+## p:time6:mixture2   20.394361 126.1838900 -226.926060 267.7147800
+## p:time7:mixture2   20.001746 126.1832700 -227.317460 267.3209500
+## p:time8:mixture2  -27.244066   0.0417435  -27.325883 -27.1622490
+## p:time9:mixture2  -47.106115   0.0249068  -47.154932 -47.0572980
+## p:time10:mixture2  19.076678 126.1856500 -228.247210 266.4005600
+## p:time11:mixture2  19.397699 126.1852700 -227.925440 266.7208400
+## f0:(Intercept)      0.404002   1.1145617   -1.780539   2.5885431</code></pre>
 <pre class="r"><code>## Na escala de probabilidades
 get.real(boto.Mth, parameter=&quot;p&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                   1         2         3         4         5         6
-## mixture:1 1.0000000 0.5999999 0.5999999 0.8000000 1.0000000 0.3999999
-## mixture:2 0.2089688 0.2686743 0.2686742 0.4179377 0.3582323 0.2686742
+## mixture:1 1.0000000 0.6000000 0.6000000 0.7999999 1.0000000 0.4000000
+## mixture:2 0.2089688 0.2686743 0.2686743 0.4179378 0.3582324 0.2686743
 ##                   7            8            9        10        11
-## mixture:1 0.6000000 3.999998e-01 1.000000e+00 0.3999999 0.3999999
-## mixture:2 0.3582324 1.642367e-20 2.724191e-14 0.0895581 0.1194108</code></pre>
+## mixture:1 0.6000000 4.000000e-01 1.000000e+00 0.4000000 0.4000000
+## mixture:2 0.3582324 7.516389e-22 3.991627e-15 0.0895581 0.1194108</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;pi&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                    
-## mixture:1 0.1298775</code></pre>
+## mixture:1 0.1298776</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;f0&quot;) ##N de indivíduos não registrados</code></pre>
 <pre><code>## [[1]]
-##        1
-##  1.49781</code></pre>
+##         1
+##  1.497807</code></pre>
 <div id="estimativa-do-tamanho-populacional" class="section level3">
 <h3>Estimativa do tamanho populacional</h3>
 <p>A estimativa de interesse é o tamanho da população, que é obtido somando-se a <span class="math">\(f_0\)</span> ao total de indivíduos registrados. Usamos a função <code>get.real</code> com argumento <code>se=TRUE</code> para obter os intervalos de confiança<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
 <pre class="r"><code>(boto.f0.ic &lt;- as.numeric(get.real(boto.Mth, parameter=&quot;f0&quot;, se=TRUE)[,5:6]))</code></pre>
-<pre><code>## [1] 0.2573695 8.7167907</code></pre>
+<pre><code>## [1] 0.2573674 8.7168218</code></pre>
 <p>O número de indivíduos registrados é a soma das frequências no objeto processado</p>
 <pre class="r"><code>(boto.Nobs &lt;- sum(boto$freq))</code></pre>
 <pre><code>## [1] 37</code></pre>
 <p>E finalmente temos o intervalo de confiança do tamanho populacional</p>
 <pre class="r"><code>(boto.Nobs + boto.f0.ic)</code></pre>
-<pre><code>## [1] 37.25737 45.71679</code></pre>
+<pre><code>## [1] 37.25737 45.71682</code></pre>
 <p>A estimativa do tamanho populacional parece bastante precisa, mas com o pacote <em>Rcapture</em> os intervalos são mais conservadores. Confira isto executando o <a href="http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:closed_rcapture.r">roteiro do Rcapture</a></p>
 </div>
 </div>

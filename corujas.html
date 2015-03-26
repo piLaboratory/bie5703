@@ -8,6 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
+<meta name="author" content="Leonardo Wedekin e Paulo Inácio Prado (http://ecologia.ib.usp.br/bie5703)" />
 
 
 <title>Modelos de ocorrência: uma espécie, várias estações</title>
@@ -61,6 +62,7 @@ img {
 
 <div id="header">
 <h1 class="title">Modelos de ocorrência: uma espécie, várias estações</h1>
+<h4 class="author"><em>Leonardo Wedekin e Paulo Inácio Prado (<a href="http://ecologia.ib.usp.br/bie5703" class="uri">http://ecologia.ib.usp.br/bie5703</a>)</em></h4>
 </div>
 
 <div id="TOC">
@@ -84,10 +86,19 @@ img {
 <div id="preparacao" class="section level2">
 <h2>Preparação</h2>
 <p>Abra o R e carregue os pacotes necessários</p>
-<pre class="r"><code>library(unmarked)
-library(RMark)
+<pre class="r"><code>library(unmarked)</code></pre>
+<pre><code>## Loading required package: reshape
+## Loading required package: lattice
+## Loading required package: Rcpp</code></pre>
+<pre class="r"><code>library(RMark)
 library(stringr)
 library(plyr)</code></pre>
+<pre><code>## 
+## Attaching package: 'plyr'
+## 
+## The following objects are masked from 'package:reshape':
+## 
+##     rename, round_any</code></pre>
 <p>Usaremos dados de registros da coruja manchada do norte <em>Strix occidentalis caurina</em> em 55 sítios de floresta temperada nos EUA, por 5 anos. <a href="http://ecologia.ib.usp.br/bie5703/doku.php?id=roteiros:occupancy#exerciciomodelo_de_uma_especie_multiplas_estacoes">Aqui</a> há mais informações sobre este caso de estudo.</p>
 <p>Os dados estão no formato nativo do MARK (<em>.inp</em>). Use os comandos abaixo para convertê-los para um objeto da classe <em>unmarkedMultFrame</em>, do pacote <em>unmarked</em>:</p>
 <pre class="r"><code>## Link dos dados na página da disciplina
@@ -105,8 +116,8 @@ y &lt;- ldply(y, as.numeric)[,2:41]</code></pre>
 ## (Veja vinhetas para detalhes)
 coruj &lt;- unmarkedMultFrame(y = y,
                            yearlySiteCovs = list(ano=ano),
-                           numPrimary=5)</code></pre>
-<pre class="r"><code>## Verifica objeto
+                           numPrimary=5)
+## Verifica objeto
 summary(coruj)</code></pre>
 <pre><code>## unmarkedFrame Object
 ## 

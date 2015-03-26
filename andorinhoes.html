@@ -8,6 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
+<meta name="author" content="Leonardo Wedekin e Paulo Inácio Prado (http://ecologia.ib.usp.br/bie5703)" />
 
 
 <title>Modelos de marcação e recaptura: populações abertas: Cormak-Jolly-Seber</title>
@@ -61,6 +62,7 @@ img {
 
 <div id="header">
 <h1 class="title">Modelos de marcação e recaptura: populações abertas: Cormak-Jolly-Seber</h1>
+<h4 class="author"><em>Leonardo Wedekin e Paulo Inácio Prado (<a href="http://ecologia.ib.usp.br/bie5703" class="uri">http://ecologia.ib.usp.br/bie5703</a>)</em></h4>
 </div>
 
 <div id="TOC">
@@ -170,27 +172,27 @@ a5 &lt;- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime2))</code></pr
 <p>Os coeficientes na escala da função de ligação estão no dataframe <code>beta</code> desta lista</p>
 <pre class="r"><code>a3$results$beta</code></pre>
 <pre><code>##                       estimate        se        lcl        ucl
-## Phi:(Intercept)      0.3107155 0.3161185 -0.3088768  0.9303078
-## Phi:colonyprotected  0.8973280 0.3759842  0.1603989  1.6342571
-## p:(Intercept)        2.3000678 1.0331497  0.2750944  4.3250412
-## p:time3             -1.3106847 1.1495093 -3.5637230  0.9423536
-## p:time4             -2.1525240 1.1281024 -4.3636047  0.0585567
-## p:time5             -1.4604201 1.1436576 -3.7019890  0.7811488
-## p:time6             -0.4981598 1.2596742 -2.9671212  1.9708017
-## p:time7             -0.4818687 1.3516490 -3.1311007  2.1673634
-## p:time8             -2.4470965 1.0999933 -4.6030833 -0.2911097</code></pre>
+## Phi:(Intercept)      0.3107153 0.3161185 -0.3088770  0.9303076
+## Phi:colonyprotected  0.8973283 0.3759842  0.1603992  1.6342574
+## p:(Intercept)        2.3000687 1.0331486  0.2750974  4.3250399
+## p:time3             -1.3106858 1.1495076 -3.5637207  0.9423491
+## p:time4             -2.1525251 1.1281013 -4.3636037  0.0585536
+## p:time5             -1.4604207 1.1436563 -3.7019872  0.7811457
+## p:time6             -0.4981605 1.2596731 -2.9671197  1.9707988
+## p:time7             -0.4818706 1.3516485 -3.1311017  2.1673606
+## p:time8             -2.4470976 1.0999923 -4.6030826 -0.2911125</code></pre>
 <p>E os coeficientes na escala original de probabilidades estão no dataframe <code>real</code></p>
 <pre class="r"><code>a3$results$real</code></pre>
 <pre><code>##                             estimate        se       lcl       ucl fixed
-## Phi gexposed c1 c1 a0 t1   0.5770599 0.0771524 0.4233889 0.7171377      
-## Phi gprotected c1 c1 a0 t1 0.7699526 0.0389282 0.6850936 0.8373725      
-## p gexposed c1 c1 a1 t2     0.9088827 0.0855603 0.5683432 0.9869398      
-## p gexposed c1 c1 a2 t3     0.7289661 0.1025871 0.4929225 0.8815382      
-## p gexposed c1 c1 a3 t4     0.5368192 0.1137048 0.3210910 0.7395922      
-## p gexposed c1 c1 a4 t5     0.6983910 0.1037709 0.4685583 0.8587842      
-## p gexposed c1 c1 a5 t6     0.8583810 0.0878042 0.5953708 0.9614914      
-## p gexposed c1 c1 a6 t7     0.8603499 0.1050435 0.5261267 0.9715791      
-## p gexposed c1 c1 a7 t8     0.4633089 0.0948795 0.2900973 0.6458517      
+## Phi gexposed c1 c1 a0 t1   0.5770598 0.0771524 0.4233889 0.7171377      
+## Phi gprotected c1 c1 a0 t1 0.7699526 0.0389282 0.6850937 0.8373725      
+## p gexposed c1 c1 a1 t2     0.9088827 0.0855601 0.5683439 0.9869398      
+## p gexposed c1 c1 a2 t3     0.7289660 0.1025870 0.4929225 0.8815382      
+## p gexposed c1 c1 a3 t4     0.5368191 0.1137048 0.3210910 0.7395921      
+## p gexposed c1 c1 a4 t5     0.6983911 0.1037709 0.4685583 0.8587842      
+## p gexposed c1 c1 a5 t6     0.8583811 0.0878041 0.5953709 0.9614914      
+## p gexposed c1 c1 a6 t7     0.8603498 0.1050435 0.5261265 0.9715790      
+## p gexposed c1 c1 a7 t8     0.4633088 0.0948795 0.2900973 0.6458516      
 ##                               note
 ## Phi gexposed c1 c1 a0 t1          
 ## Phi gprotected c1 c1 a0 t1        

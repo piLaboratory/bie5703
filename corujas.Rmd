@@ -1,5 +1,6 @@
 ---
 title: "Modelos de ocorrência: uma espécie, várias estações"
+author: "Leonardo Wedekin e Paulo Inácio Prado (http://ecologia.ib.usp.br/bie5703)"
 output:
   html_document:
     toc: true

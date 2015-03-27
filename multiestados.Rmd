@@ -1,0 +1,260 @@
+---
+title: "Modelos de marcação e recaptura: múltiplos estados"
+author: "Leonardo Wedekin e Paulo Inácio Prado (http://ecologia.ib.usp.br/bie5703)"
+output:
+  html_document:
+    toc: true
+    theme: united
+  pdf_document:
+    toc: true
+    highlight: zenburn
+---
+
+-------
+
+
+* [Arquivo em pdf](./multiestados.pdf)
+* [Arquivo em markdown](./multiestados.Rmd) (para executar os comandos no R studio)
+
+-------
+## Preparação
+
+Vamos usar o  _RMark_, que é um pacote do R para usar o programa [MARK](http://www.phidot.org/software/mark).
+Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmark/) para instalação.
+
+Com o RMark instalado, abra o R e carregue-o:
+
+```{r}
+library(RMark)
+```
+Usaremos dados simulados de marcação e recaptura com quatro ocasiões de captura em que cada indivíduo pode estar em 3 estados.
+
+Os dados estão no formato nativo do MARK (_.inp_). Use os comandos abaixo para importá-lo para o R:
+
+```{r, warning=FALSE}
+## Link dos dados na página da disciplina
+url <- "http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:multi.inp"
+## Importa arquivo inp
+## use.comments=TRUE usa os rótulos das linhas (id dos indivíduos)
+multi.raw <- convert.inp(url)
+```
+
+## Ajuste dos modelos
+### Processamento dos dados
+O primeiro passo é usar a função `process.data` para criar um objeto 
+com as informações que o Mark precisa para ajustar o modelo. Uma delas 
+é o tipo de modelo, que é indicado no argumento `model`.
+
+Vamos usar o modelo multiestados básico, cuja a sigla no RMark é "Multistrata" [^2].
+
+
+```{r}
+## Processa os dados
+multi <- process.data(data=multi.raw, model="Multistrata")
+```
+
+O objeto resultante é uma lista, na qual podemos conferir
+o número de ocasiões de estratos ou o nome dos estratos, por exemplo:
+
+```{r}
+## Conteúdo da lista
+names(multi)
+## N de ocasiões primárias
+multi$nocc
+## N de estratos
+multi$nstrata
+## Rótulos dos estratos
+multi$strata.labels
+```
+
+### Ajuste dos modelos
+
+Para ajustar os modelos, crie listas que especificam a fórmula de cada termo.
+No modelo `Multistrata` os nomes parâmetros são:
+
+*  `S` : probabilidade de sobrevivência entre capturas ($S$),
+*  `p` : probabilidade de recaptura ($p$),
+*  `Psi` : probabilidade de transição entre estados ($\psi$)
+
+O RMark
+já cria algumas covariáveis para cada tipo de modelo  [^3].
+Neste roteiro vamos usar três delas:
+
+* covariável `time`, com um nível para cada intervalo entre seções primárias,
+* `stratum`, para definir valores dos parâmetros para cada estrato
+* `tostratum`, para definir transições entre estratos.
+ 
+Podemos então criar objetos com as fórmulas para diferentes combinações dessas covariáveis.
+Algumas possibilidades:
+
+```{r}
+## Fórmulas estatísticas para cada parâmetro do modelo
+## formula para expressar um parâmetro constante
+f.dot <- list(formula=~1)
+## formula para expressar um parametro que varia entre estratos
+f.stratum <- list(formula=~-1+stratum)
+## formula para expressar um parametro que varia entre ocasiões
+f.time <- list(formula=~-1+time)
+## formula para expressar parametro diferente para cada combinacao de estrato e ocasiao
+f.stratum.time <- list(formula=~-1+stratum*time)
+## formula para expressar transicoes diferentes entre estratos
+f.tostratum <- list(formula=~-1+stratum:tostratum)
+```
+
+E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas [^6]:
+
+```{r, results="hide", warning=FALSE}
+multi0 <- mark(multi,
+               model.parameters=
+                   list(S=f.dot, p=f.dot, Psi=f.dot),
+               adjust=TRUE, delete=TRUE)
+multi1 <- mark(multi, model.parameters=
+                   list(S=f.stratum, p=f.time, Psi=f.dot),
+               adjust=TRUE, delete=TRUE)
+multi2 <- mark(multi, model.parameters=
+                   list(S=f.stratum, p=f.time, Psi=f.stratum),
+               adjust=TRUE, delete=TRUE)
+multi3 <- mark(multi, model.parameters=
+                 list(S=f.stratum, p=f.stratum.time, Psi=f.tostratum),
+               adjust=TRUE, delete=TRUE)
+```
+
+## Seleção de modelos
+A função abaixo retorna a tabela de seleção de modelos:
+
+```{r}
+collect.models(lx=c("multi0", "multi1", "multi2", "multi3"))
+```
+## Valores das estimativas
+Os objetos dos modelos ajustados são uma lista com todo o output do Mark.
+Esta lista tem um elemento `results`, com os valores dos coeficientes e muito
+mais [^4]:
+
+```{r}
+names(multi1$results)
+```
+Os coeficientes na escala da função de ligação estão no dataframe `beta` desta lista.
+Verifique estes valores para o modelo selecionado:
+
+```{r}
+multi1$results$beta
+```
+Os coeficientes na escala original de probabilidades estão no dataframe `real`
+
+```{r}
+multi1$results$real
+```
+
+### Matrizes de transição
+O RMark tem uma função para exibir as estimativas de $\psi$
+na forma de uma matriz de transição entre estados:
+
+```{r, warning=FALSE}
+## Crie uma lista com todas as estimativas e sua matriz de covariancia
+Psilist <- get.real(model = multi0, parameter = "Psi", vcv=TRUE)
+## Conveniência: objeto apenas com as estimativas
+Psivalues=Psilist$estimates
+## Matrize com probabilidades de transição, seus erros e intervalo de confiança
+TransitionMatrix(Psivalues[Psivalues$time==1,], vcv.real=Psilist$vcv.real)
+```
+
+## Transições proibidas e manipulação da matriz de delineamento
+Algumas transições podem ser impossíveis, como por exemplo a passagem do estado de larva para adulto sem passar por pupa.
+Os parâmetros $\psi$ correspondentes a estas transições devem então ser fixados em zero.
+No Rmark isso é feito manipulando-se a matriz de delineamento (_design data_).
+Quando usamos o comando `mark` sobre o objeto de dados esta matriz é criada internamente mas não é exibida.
+Vamos criar esta matriz para trabalhar com ela:
+
+```{r}
+multi.ddl <- make.design.data(multi)
+```
+E o modelo com probabilidades de transição entre estados diferentes pode ser ajustado com
+
+```{r, results="hide", warning=FALSE}
+multi4 <- mark(data=multi, ddl=multi.ddl, model.parameters=
+                 list(S=f.stratum, p=f.dot, Psi=f.tostratum),
+               adjust=TRUE, delete=TRUE)
+```
+
+Que neste caso dá na mesma que omitir a matriz de delineamento
+
+```{r, results="hide", warning=FALSE}
+multi4b <- mark(data=multi, model.parameters=
+                    list(S=f.stratum, p=f.dot, Psi=f.tostratum),
+               adjust=TRUE, delete=TRUE)
+```
+
+```{r, results="hide", warning=FALSE}
+all.equal(multi4$results$beta, multi4b$results$beta, tolerance=1e-5)
+```
+
+Explicitar a matriz de delineamento tem a vantagem de que podemos manipulá-la
+para obter vários outros tipos de modelos que a especificação das fórmulas
+não permite. Isto oferece uma enorme flexibilidade e é uma das principais vantagens do
+RMark.
+
+Suponha que as transições entre os estados A e C não possam acontecer,
+ou que você quer avaliar se impor isto
+resulta em um modelo melhor.
+Primeiro temos que criar uma coluna que indica valores fixos
+na matriz de delineamento do parâmetro $\psi$.
+Esta coluna deve ter o nome `fix` e valores `NA`
+para os parâmetros que devem ser estimados
+
+```{r}
+multi.ddl$Psi$fix <- NA
+```
+Agora indicamos o valor zero para as transições que queremos anular:
+
+```{r}
+multi.ddl$Psi$fix[multi.ddl$Psi$stratum=="A" & multi.ddl$Psi$tostratum=="C"] <- 0
+multi.ddl$Psi$fix[multi.ddl$Psi$stratum=="C" & multi.ddl$Psi$tostratum=="A"] <- 0
+```
+E agora ajuste o modelo com esta nova matriz de delineamento:
+
+```{r, results="hide", warning=FALSE}
+multi4c <- mark(data=multi, ddl=multi.ddl, model.parameters=
+                 list(S=f.stratum, p=f.dot, Psi=f.tostratum),
+               adjust=TRUE, delete=TRUE)
+```
+Verificando as matrizes de transição
+
+```{r}
+## modelo sem transicoes fixas
+Psilist <- get.real(model = multi4, parameter = "Psi", vcv=TRUE)
+Psivalues=Psilist$estimates
+TransitionMatrix(Psivalues[Psivalues$time==1,])
+## Com trasicoes A->C e C->A fixas em zero
+Psilist <- get.real(model = multi4c, parameter = "Psi", vcv=TRUE)
+Psivalues=Psilist$estimates
+TransitionMatrix(Psivalues[Psivalues$time==1,])
+```
+
+No caso não foi uma boa ideia  anular algumas transições:
+```{r}
+collect.models(lx=c("multi4", "multi4c"))
+```
+Este resultado faz sentido, já que as transições anuladas
+são observadas nos dados !
+
+
+## Para saber mais
+* [Capítulo sobre modelos multiestado](http://www.phidot.org/software/mark/docs/book/pdf/chap10.pdf) no guia _online_ do Mark
+* Para outro exemplo de ajuste do modelo robusto e outras funções úteis do RMark digite `?mstrata`
+* Veja também o pacote Rcapture
+
+[^2]: A lista de modelos implementados no RMark está no diretório onde o R instalou o pacote.
+Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf).
+
+[^3]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
+que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
+estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^4]: Consulte o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^5]: O RMark permite reduzir pares de alguns parâmetros a uma só estimativa. No caso do modelo robusto, pode-se
+substituir os parâmetros $\gamma '$ e $\gamma ''$ por um só (_random emigration model_); e também subsituir os parâmetros
+$p$ e $c$ por um único (modelo sem resposta comportamental à captura). Veja final da seção C.3 e exemplo na seção C.19 do apêndice sobre o RMark no guia _online_ para mais detalhes.
+
+[^6]: Use sempre os argumentos `delete=TRUE` para remover os arquivos temporários do Mark que o ajuste cria e
+`adjust=TRUE` para que o número de parâmetros seja verificado e ajustado, para o cálculo do AIC.

@@ -125,24 +125,29 @@ f.time2.s <- list(formula=~-1+session:time, share=TRUE)
 
 ```
 
-E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas:
+E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas [^6]:
 
 ```{r, results="hide", warning=FALSE}
 alb1 <- mark(alb, model.parameters=
                  list(S=f.time, GammaDoublePrime=f.time, GammaPrime=f.time,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb2 <- mark(alb, model.parameters=
                  list(S=f.time, GammaDoublePrime=f.time.s,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb3 <- mark(alb, model.parameters=
                  list(S=f.time, GammaDoublePrime=f.dot, GammaPrime=f.dot,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb4 <- mark(alb, model.parameters=
                  list(S=f.time, GammaDoublePrime=f.dot.s,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb5 <- mark(alb, model.parameters=
                  list(S=f.time, GammaDoublePrime=f.zero, GammaPrime=f.zero,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 ```
 
 ## Seleção de modelos
@@ -185,19 +190,24 @@ Vamos incluir modelos com $S$ constante em nossa seleção para verificar:
 ```{r, results="hide", warning=FALSE}
 alb6 <- mark(alb, model.parameters=
                  list(S=f.dot, GammaDoublePrime=f.time, GammaPrime=f.time,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb7 <- mark(alb, model.parameters=
                  list(S=f.dot, GammaDoublePrime=f.time.s,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb8 <- mark(alb, model.parameters=
                  list(S=f.dot, GammaDoublePrime=f.dot, GammaPrime=f.dot,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb9 <- mark(alb, model.parameters=
                  list(S=f.dot, GammaDoublePrime=f.dot.s,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 alb10 <- mark(alb, model.parameters=
                  list(S=f.dot, GammaDoublePrime=f.zero, GammaPrime=f.zero,
-                      p=f.time2.s, f0=f.occ))
+                      p=f.time2.s, f0=f.occ),
+               adjust=TRUE, delete=TRUE)
 ```
 E repetimos a seleção de modelos:
 
@@ -259,3 +269,6 @@ estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMar
 [^5]: O RMark permite reduzir pares de alguns parâmetros a uma só estimativa. No caso do modelo robusto, pode-se
 substituir os parâmetros $\gamma '$ e $\gamma ''$ por um só (_random emigration model_); e também subsituir os parâmetros
 $p$ e $c$ por um único (modelo sem resposta comportamental à captura). Veja final da seção C.3 e exemplo na seção C.19 do apêndice sobre o RMark no guia _online_ para mais detalhes.
+
+[^6]: Use sempre os argumentos `delete=TRUE` para remover os arquivos temporários do Mark que o ajuste cria e
+`adjust=TRUE` para que o número de parâmetros seja verificado e ajustado, para o cálculo do AIC.

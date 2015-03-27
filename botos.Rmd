@@ -77,17 +77,17 @@ t.time <- list(formula=~time)
 t.timeshared <- list(formula=~time, share=TRUE)
 ```
 
-E usamos a função `mark` para fazer os ajuste:
+E usamos a função `mark` para fazer os ajuste [^5]:
 
 ```{r, results="hide", warning=FALSE}
 boto.M0 <- mark(boto, model.parameters=list(p=t.dotshared),
-                model.name="M0", adjust=TRUE)
+                model.name="M0", adjust=TRUE, delete=TRUE)
 boto.Mb <- mark(boto, model.parameters=list(c=t.dot, p=t.dot),
-                model.name="Mb", adjust=TRUE)
+                model.name="Mb", adjust=TRUE, delete=TRUE)
 boto.Mt <- mark(boto, model.parameters=list(p=t.timeshared), model.name="Mt",
-                adjust=TRUE)
+                adjust=TRUE, delete=TRUE)
 boto.Mtb <- mark(boto, model.parameters=list(c=t.time, p=t.time),
-                 model.name="Mtb", adjust=TRUE)
+                 model.name="Mtb", adjust=TRUE, delete=TRUE)
 ```
 
 Se omitimos a função de um parâmetro ela será constante.
@@ -120,13 +120,13 @@ E ajuste os modelos
 
 ```{r, results="hide", warning=FALSE}
 boto.Mh <- mark(botoH, model.parameters=list(p=t.mixshared),
-                model.name="Mh", adjust=TRUE)
+                model.name="Mh", adjust=TRUE, delete=TRUE)
 boto.Mbh <- mark(botoH, model.parameters=list(c=t.mix, p=t.mix),
-                 model.name="Mbh", adjust=TRUE)
+                 model.name="Mbh", adjust=TRUE, delete=TRUE)
 boto.Mth <- mark(botoH, model.parameters=list(p=t.timemixshared),
-                 model.name="Mth", adjust=TRUE)
+                 model.name="Mth", adjust=TRUE, delete=TRUE)
 boto.Mtbh <- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix),
-                  model.name="Mtbh", adjust=TRUE)
+                  model.name="Mtbh", adjust=TRUE, delete=TRUE)
 ```
 
 Note que em todos os modelos acima os parâmetros $f_0$ e $\pi$
@@ -190,3 +190,6 @@ Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (htt
 [^4]: Para entender completamente isso estude o comando `make.design.data` e o objeto que ele cria,
 que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis
 estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^5]: Use sempre os argumentos `delete=TRUE` para remover os arquivos temporários do Mark que o ajuste cria e
+`adjust=TRUE` para que o número de parâmetros seja verificado e ajustado, para o cálculo do AIC.

@@ -120,19 +120,19 @@ t.dotshared=list(formula=~1,share=TRUE)
 t.time &lt;- list(formula=~time)
 ## Parametro p=c dependem do tempo
 t.timeshared &lt;- list(formula=~time, share=TRUE)</code></pre>
-<p>E usamos a função <code>mark</code> para fazer os ajuste:</p>
+<p>E usamos a função <code>mark</code> para fazer os ajuste <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
 <pre class="r"><code>boto.M0 &lt;- mark(boto, model.parameters=list(p=t.dotshared),
-                model.name=&quot;M0&quot;, adjust=TRUE)
+                model.name=&quot;M0&quot;, adjust=TRUE, delete=TRUE)
 boto.Mb &lt;- mark(boto, model.parameters=list(c=t.dot, p=t.dot),
-                model.name=&quot;Mb&quot;, adjust=TRUE)</code></pre>
+                model.name=&quot;Mb&quot;, adjust=TRUE, delete=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 2 parameters counted of 3 specified parameters
 ## 
 ## AICc and parameter count have been adjusted upward</code></pre>
 <pre class="r"><code>boto.Mt &lt;- mark(boto, model.parameters=list(p=t.timeshared), model.name=&quot;Mt&quot;,
-                adjust=TRUE)
+                adjust=TRUE, delete=TRUE)
 boto.Mtb &lt;- mark(boto, model.parameters=list(c=t.time, p=t.time),
-                 model.name=&quot;Mtb&quot;, adjust=TRUE)</code></pre>
+                 model.name=&quot;Mtb&quot;, adjust=TRUE, delete=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 18 parameters counted of 22 specified parameters
 ## 
@@ -153,17 +153,17 @@ t.timemixshared &lt;- list(formula=~time*mixture, share=TRUE)
 t.timemix &lt;- list(formula=~time*mixture)</code></pre>
 <p>E ajuste os modelos</p>
 <pre class="r"><code>boto.Mh &lt;- mark(botoH, model.parameters=list(p=t.mixshared),
-                model.name=&quot;Mh&quot;, adjust=TRUE)
+                model.name=&quot;Mh&quot;, adjust=TRUE, delete=TRUE)
 boto.Mbh &lt;- mark(botoH, model.parameters=list(c=t.mix, p=t.mix),
-                 model.name=&quot;Mbh&quot;, adjust=TRUE)
+                 model.name=&quot;Mbh&quot;, adjust=TRUE, delete=TRUE)
 boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
-                 model.name=&quot;Mth&quot;, adjust=TRUE)</code></pre>
+                 model.name=&quot;Mth&quot;, adjust=TRUE, delete=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 19 parameters counted of 24 specified parameters
 ## 
 ## AICc and parameter count have been adjusted upward</code></pre>
 <pre class="r"><code>boto.Mtbh &lt;- mark(botoH, model.parameters=list(c=t.timemix, p=t.timemix),
-                  model.name=&quot;Mtbh&quot;, adjust=TRUE)</code></pre>
+                  model.name=&quot;Mtbh&quot;, adjust=TRUE, delete=TRUE)</code></pre>
 <pre><code>## 
 ## Note: only 25 parameters counted of 44 specified parameters
 ## 
@@ -191,59 +191,59 @@ boto.Mth &lt;- mark(botoH, model.parameters=list(p=t.timemixshared),
 <h2>Valores das estimativas</h2>
 <p>A função <code>coef</code> retorna os coeficientes na escala de ligação (logito). Para as estimativas na escala de probabilidades use a função <code>get.real</code>:</p>
 <pre class="r"><code>coef(boto.Mth, data=boto2002)</code></pre>
-<pre><code>##                     estimate          se         lcl         ucl
-## pi:(Intercept)     -1.902042   0.4820127   -2.846787  -0.9572969
-## p:(Intercept)      19.659103 126.1803900 -227.654470 266.9726700
-## p:time2           -19.253638 126.1832600 -266.572840 228.0655600
-## p:time3           -19.253638 126.1832700 -266.572850 228.0655700
-## p:time4           -18.272809 126.1838000 -265.593060 229.0474400
-## p:time5            13.890129 488.3152200 -943.207720 970.9879700
-## p:time6           -20.064568 126.1832400 -267.383720 227.2545800
-## p:time7           -19.253638 126.1827400 -266.571810 228.0645300
-## p:time8           -20.064568 126.1836100 -267.384450 227.2553100
-## p:time9            15.282690   0.2111675   14.868802  15.6965780
-## p:time10          -20.064568 126.1840200 -267.385260 227.2561200
-## p:time11          -20.064568 126.1840000 -267.385200 227.2560700
-## p:mixture2        -20.990255 126.1804800 -268.304000 226.3234900
-## p:time2:mixture2   19.583431 126.1839200 -227.737050 266.9039100
-## p:time3:mixture2   19.583431 126.1839200 -227.737050 266.9039200
-## p:time4:mixture2   19.272716 126.1842900 -228.048500 266.5939300
-## p:time5:mixture2  -13.142021 488.3152300 -970.239880 943.9558400
-## p:time6:mixture2   20.394361 126.1838900 -226.926060 267.7147800
-## p:time7:mixture2   20.001746 126.1832700 -227.317460 267.3209500
-## p:time8:mixture2  -27.244066   0.0417435  -27.325883 -27.1622490
-## p:time9:mixture2  -47.106115   0.0249068  -47.154932 -47.0572980
-## p:time10:mixture2  19.076678 126.1856500 -228.247210 266.4005600
-## p:time11:mixture2  19.397699 126.1852700 -227.925440 266.7208400
-## f0:(Intercept)      0.404002   1.1145617   -1.780539   2.5885431</code></pre>
+<pre><code>##                      estimate          se          lcl          ucl
+## pi:(Intercept)     -1.9020436   0.4820132    -2.846789   -0.9572976
+## p:(Intercept)      18.9949060 130.1367200  -236.073060  274.0628800
+## p:time2           -18.5895140 130.1395100  -273.662950  236.4839200
+## p:time3           -18.5895140 130.1395100  -273.662950  236.4839200
+## p:time4           -17.6086330 130.1400300  -272.683100  237.4658400
+## p:time5            13.4694670 505.2418300  -976.804540 1003.7435000
+## p:time6           -19.4004230 130.1394700  -274.473800  235.6729500
+## p:time7           -18.5894250 130.1390000  -273.661870  236.4830200
+## p:time8           -19.4003390 130.1398300  -274.474420  235.6737400
+## p:time9            14.7536400   0.1681218    14.424121   15.0831590
+## p:time10          -19.4003350 130.1402300  -274.475200  235.6745300
+## p:time11          -19.4003650 130.1402100  -274.475180  235.6744500
+## p:mixture2        -20.3260450 130.1368100  -275.394190  234.7421000
+## p:time2:mixture2   18.9193500 130.1401400  -236.155320  273.9940200
+## p:time3:mixture2   18.9193520 130.1401400  -236.155320  273.9940300
+## p:time4:mixture2   18.6085240 130.1405100  -236.466880  273.6839300
+## p:time5:mixture2  -12.7213890 505.2418400 -1002.995400  977.5526300
+## p:time6:mixture2   19.7302310 130.1401000  -235.344380  274.8048400
+## p:time7:mixture2   19.3375060 130.1395100  -235.735940  274.4109500
+## p:time8:mixture2  -26.3891640   0.0522470   -26.491568  -26.2867600
+## p:time9:mixture2  -45.6317130   0.0874371   -45.803090  -45.4603370
+## p:time10:mixture2  18.4124160 130.1418100  -236.665540  273.4903700
+## p:time11:mixture2  18.7334550 130.1414500  -236.343790  273.8107000
+## f0:(Intercept)      0.4039731   1.1145751    -1.780594    2.5885403</code></pre>
 <pre class="r"><code>## Na escala de probabilidades
 get.real(boto.Mth, parameter=&quot;p&quot;)</code></pre>
 <pre><code>## [[1]]
-##                   1         2         3         4         5         6
-## mixture:1 1.0000000 0.6000000 0.6000000 0.7999999 1.0000000 0.4000000
-## mixture:2 0.2089688 0.2686743 0.2686743 0.4179378 0.3582324 0.2686743
+##                  1         2         3         4         5         6
+## mixture:1 1.000000 0.5999825 0.5999825 0.7999967 1.0000000 0.3999876
+## mixture:2 0.208971 0.2686853 0.2686856 0.4179369 0.3582285 0.2686798
 ##                   7            8            9        10        11
-## mixture:1 0.6000000 4.000000e-01 1.000000e+00 0.4000000 0.4000000
-## mixture:2 0.3582324 7.516389e-22 3.991627e-15 0.0895581 0.1194108</code></pre>
+## mixture:1 0.6000038 4.000078e-01 1.000000e+00 0.4000088 0.4000016
+## mixture:2 0.3582291 3.433721e-21 1.027346e-14 0.0895568 0.1194079</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;pi&quot;)</code></pre>
 <pre><code>## [[1]]
 ##                    
-## mixture:1 0.1298776</code></pre>
+## mixture:1 0.1298774</code></pre>
 <pre class="r"><code>get.real(boto.Mth, parameter=&quot;f0&quot;) ##N de indivíduos não registrados</code></pre>
 <pre><code>## [[1]]
 ##         1
-##  1.497807</code></pre>
+##  1.497764</code></pre>
 <div id="estimativa-do-tamanho-populacional" class="section level3">
 <h3>Estimativa do tamanho populacional</h3>
-<p>A estimativa de interesse é o tamanho da população, que é obtido somando-se a <span class="math">\(f_0\)</span> ao total de indivíduos registrados. Usamos a função <code>get.real</code> com argumento <code>se=TRUE</code> para obter os intervalos de confiança<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
+<p>A estimativa de interesse é o tamanho da população, que é obtido somando-se a <span class="math">\(f_0\)</span> ao total de indivíduos registrados. Usamos a função <code>get.real</code> com argumento <code>se=TRUE</code> para obter os intervalos de confiança<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
 <pre class="r"><code>(boto.f0.ic &lt;- as.numeric(get.real(boto.Mth, parameter=&quot;f0&quot;, se=TRUE)[,5:6]))</code></pre>
-<pre><code>## [1] 0.2573674 8.7168218</code></pre>
+<pre><code>## [1] 0.2573562 8.7166958</code></pre>
 <p>O número de indivíduos registrados é a soma das frequências no objeto processado</p>
 <pre class="r"><code>(boto.Nobs &lt;- sum(boto$freq))</code></pre>
 <pre><code>## [1] 37</code></pre>
 <p>E finalmente temos o intervalo de confiança do tamanho populacional</p>
 <pre class="r"><code>(boto.Nobs + boto.f0.ic)</code></pre>
-<pre><code>## [1] 37.25737 45.71682</code></pre>
+<pre><code>## [1] 37.25736 45.71670</code></pre>
 <p>A estimativa do tamanho populacional parece bastante precisa, mas com o pacote <em>Rcapture</em> os intervalos são mais conservadores. Confira isto executando o <a href="http://ecologia.ib.usp.br/bie5703/lib/exe/fetch.php?media=roteiros:closed_rcapture.r">roteiro do Rcapture</a></p>
 </div>
 </div>
@@ -253,7 +253,8 @@ get.real(boto.Mth, parameter=&quot;p&quot;)</code></pre>
 <li id="fn1"><p>A lista de modelos implementados no RMark está no diretório onde o R instalou o pacote. Você pode consultá-lo lá ou no repositório de desenvolvimento do RMark: (<a href="https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf" class="uri">https://github.com/jlaake/RMark/blob/master/RMark/inst/MarkModels.pdf</a>).<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>O parâmetro <span class="math">\(f_0\)</span> (número de indivíduos não registrados em nenhuma ocasião) é constante por definição, já que a população é fechada.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Para entender completamente isso estude o comando <code>make.design.data</code> e o objeto que ele cria, que é a uma lista de matrizes de delineamento do modelo. Se você entender este objeto saberá quais covariáveis estão disponíveis e como manipulá-las. Veja também o <a href="http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf">apêndice sobre o RMark</a> no guia <em>online</em> do MARK.<a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p>Para uma lista com todos os coeficientes e seus intervalos use a função <code>summary</code> com a opção <code>se=TRUE</code>.<a href="#fnref4">↩</a></p></li>
+<li id="fn4"><p>Use sempre os argumentos <code>delete=TRUE</code> para remover os arquivos temporários do Mark que o ajuste cria e <code>adjust=TRUE</code> para que o número de parâmetros seja verificado e ajustado, para o cálculo do AIC.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Para uma lista com todos os coeficientes e seus intervalos use a função <code>summary</code> com a opção <code>se=TRUE</code>.<a href="#fnref5">↩</a></p></li>
 </ol>
 </div>
 

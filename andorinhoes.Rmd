@@ -89,15 +89,21 @@ f.cohcol <- list(formula=~cohort+colony)
 ## 
 ```
 
-E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas:
+E usamos a função `mark` para fazer os ajustes, usando os objetos com as fórmulas [^5]:
 
 ```{r, results="hide", warning=FALSE}
-a1 <- mark(andor, model.parameters=list(p=f.dot, Phi=f.dot))
-a2 <- mark(andor, model.parameters=list(p=f.time, Phi=f.time))
-a3 <- mark(andor, model.parameters=list(p=f.time, Phi=f.col))
-a4 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime))
-a5 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime2))
-a6 <- mark(andor, model.parameters=list(p=f.time, Phi=f.cohcol))
+a1 <- mark(andor, model.parameters=list(p=f.dot, Phi=f.dot),
+               adjust=TRUE, delete=TRUE)
+a2 <- mark(andor, model.parameters=list(p=f.time, Phi=f.time),
+               adjust=TRUE, delete=TRUE)
+a3 <- mark(andor, model.parameters=list(p=f.time, Phi=f.col),
+               adjust=TRUE, delete=TRUE)
+a4 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime),
+               adjust=TRUE, delete=TRUE)
+a5 <- mark(andor, model.parameters=list(p=f.time, Phi=f.coltime2),
+               adjust=TRUE, delete=TRUE)
+a6 <- mark(andor, model.parameters=list(p=f.time, Phi=f.cohcol),
+               adjust=TRUE, delete=TRUE)
 ```
 
 ## Seleção de modelos
@@ -139,3 +145,6 @@ que é a uma lista de matrizes de delineamento do modelo. Se você entender este
 estão disponíveis e como manipulá-las. Veja também o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
 
 [^4]: Consulte o [apêndice sobre o RMark](http://www.phidot.org/software/mark/docs/book/pdf/app_3.pdf) no guia _online_ do MARK.
+
+[^5]: Use sempre os argumentos `delete=TRUE` para remover os arquivos temporários do Mark que o ajuste cria e
+`adjust=TRUE` para que o número de parâmetros seja verificado e ajustado, para o cálculo do AIC.

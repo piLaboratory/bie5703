@@ -24,6 +24,7 @@ Siga as instruções do [site do RMark](http://www.phidot.org/software/mark/rmar
 
 Com o RMark instalado, abra o R e carregue-o:
 
+
 ```{r}
 library(RMark)
 ```
